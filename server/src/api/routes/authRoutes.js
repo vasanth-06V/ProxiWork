@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const pool = require('../../config/db'); // Import our database connection
 
 // @route   POST /api/auth/register
@@ -44,3 +45,53 @@ router.post('/register', async (req, res) => {
 });
 
 module.exports = router;
+
+// @route   POST /api/auth/login
+// @desc    Authenticate user & get token
+router.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+
+    // 1. Validate input
+    if (!email || !password) {
+        return res.status(400).json({ msg: 'Please provide email and password' });
+    }
+
+    try {
+        // 2. Find the user by email in the database
+        const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (userResult.rows.length === 0) {
+            return res.status(400).json({ msg: 'Invalid Credentials' });
+        }
+
+        const user = userResult.rows[0];
+
+        // 3. Compare the provided password with the stored hashed password
+        const isMatch = await bcrypt.compare(password, user.password_hash);
+        if (!isMatch) {
+            return res.status(400).json({ msg: 'Invalid Credentials' });
+        }
+
+        // 4. If credentials are correct, create the JWT payload
+        const payload = {
+            user: {
+                id: user.user_id,
+                role: user.role
+            }
+        };
+
+        // 5. Sign the token with your secret key from the .env file
+        jwt.sign(
+            payload,
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }, // Token is valid for 1 hour
+            (err, token) => {
+                if (err) throw err;
+                res.json({ token });
+            }
+        );
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
