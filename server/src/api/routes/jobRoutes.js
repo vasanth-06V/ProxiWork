@@ -126,6 +126,47 @@ router.post('/:id/propose', authMiddleware, async (req, res) => {
     }
 });
 
+// @route   GET /api/jobs/:id/proposals
+// @desc    Get all proposals for a specific job owned by the client
+// @access  Private (Job owner only)
+router.get('/:id/proposals', authMiddleware, async (req, res) => {
+    const { id: jobId } = req.params;   // Get job_id from the URL
+    const clientId = req.user.id;       // Get the logged-in user's ID from the token
 
+    try {
+        // 1. Authorize: First, verify the logged-in user is the owner of the job.
+        const job = await pool.query(
+            "SELECT client_id FROM jobs WHERE job_id = $1",
+            [jobId]
+        );
+
+        // Check if the job exists
+        if (job.rows.length === 0) {
+            return res.status(404).json({ msg: 'Job not found' });
+        }
+
+        // Check if the logged-in user is the one who created the job
+        if (job.rows[0].client_id !== clientId) {
+            return res.status(403).json({ msg: 'Forbidden: You are not the owner of this job and cannot view its proposals' });
+        }
+
+        // 2. If authorized, fetch all proposals for that job.
+        // We use a JOIN to combine data from the 'proposals' and 'profiles' tables.
+        const proposals = await pool.query(
+            `SELECT p.proposal_id, p.cover_letter, p.bid_amount, p.status, p.created_at, pr.full_name, pr.tagline 
+             FROM proposals p
+             JOIN profiles pr ON p.provider_id = pr.user_id
+             WHERE p.job_id = $1
+             ORDER BY p.created_at ASC`, // Show oldest proposals first
+            [jobId]
+        );
+
+        res.json(proposals.rows);
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
 
 module.exports = router;
