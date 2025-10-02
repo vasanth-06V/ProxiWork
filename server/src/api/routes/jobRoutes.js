@@ -88,6 +88,44 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+// @route   POST /api/jobs/:id/propose
+// @desc    Submit a proposal for a specific job
+// @access  Private (Providers only)
+router.post('/:id/propose', authMiddleware, async (req, res) => {
+    // First, we authorize: only 'provider' roles can access this.
+    if (req.user.role !== 'provider') {
+        return res.status(403).json({ msg: 'Forbidden: Only providers can submit proposals' });
+    }
+
+    const { cover_letter, bid_amount } = req.body;
+    const { id: jobId } = req.params;   // Get job_id from the URL
+    const providerId = req.user.id;     // Get provider_id from the JWT
+
+    // Basic validation
+    if (!cover_letter) {
+        return res.status(400).json({ msg: 'A cover letter is required to submit a proposal' });
+    }
+
+    try {
+        const newProposal = await pool.query(
+            `INSERT INTO proposals (job_id, provider_id, cover_letter, bid_amount) 
+             VALUES ($1, $2, $3, $4) RETURNING *`,
+            [jobId, providerId, cover_letter, bid_amount]
+        );
+
+        res.status(201).json(newProposal.rows[0]);
+
+    } catch (err) {
+        // This is a special error handler. '23505' is the PostgreSQL error code
+        // for a "unique_violation", which our UNIQUE(job_id, provider_id) constraint triggers.
+        if (err.code === '23505') {
+            return res.status(400).json({ msg: 'You have already submitted a proposal for this job' });
+        }
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
 
 
 module.exports = router;
