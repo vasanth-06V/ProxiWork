@@ -1,6 +1,6 @@
 // server/index.js
 require('dotenv').config();
-
+const cors = require('cors');
 const express = require('express');
 const pool = require('./src/config/db'); // Import from new location
 
@@ -9,6 +9,7 @@ const PORT = process.env.PORT || 5000;
 
 // --- MIDDLEWARE ---
 // This allows our server to accept JSON data in the body of requests
+app.use(cors());
 app.use(express.json());
 
 // Test DB Connection on startup
