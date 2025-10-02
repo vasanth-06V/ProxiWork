@@ -57,5 +57,37 @@ router.get('/', async (req, res) => {
     }
 });
 
+// @route   GET /api/jobs/:id
+// @desc    Get a single job by its ID
+// @access  Public
+router.get('/:id', async (req, res) => {
+    try {
+        // Get the job ID from the URL parameter
+        const { id } = req.params;
+
+        const job = await pool.query(
+            "SELECT * FROM jobs WHERE job_id = $1",
+            [id]
+        );
+
+        // If no job is found with that ID, return a 404 error
+        if (job.rows.length === 0) {
+            return res.status(404).json({ msg: 'Job not found' });
+        }
+
+        // If a job is found, return it
+        res.json(job.rows[0]);
+
+    } catch (err) {
+        console.error(err.message);
+        // Check for invalid UUID format or other potential errors
+        if (err.kind === 'ObjectId' || err.name === 'CastError') {
+             return res.status(404).json({ msg: 'Job not found' });
+        }
+        res.status(500).send('Server Error');
+    }
+});
+
+
 
 module.exports = router;
