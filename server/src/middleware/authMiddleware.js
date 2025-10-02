@@ -18,7 +18,7 @@ module.exports = function(req, res, next) {
     }
 
     try {
-        console.log('SECRET USED FOR VERIFYING:', process.env.JWT_SECRET);
+        //console.log('SECRET USED FOR VERIFYING:', process.env.JWT_SECRET);
         // 3. Verify token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 

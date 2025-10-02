@@ -78,7 +78,7 @@ router.post('/login', async (req, res) => {
                 role: user.role
             }
         };
-        console.log('SECRET USED FOR SIGNING:', process.env.JWT_SECRET);
+        //console.log('SECRET USED FOR SIGNING:', process.env.JWT_SECRET);
 
         // 5. Sign the token with your secret key from the .env file
         jwt.sign(
