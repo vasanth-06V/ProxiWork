@@ -35,4 +35,27 @@ router.post('/', authMiddleware, async (req, res) => {
     }
 });
 
+
+
+// @route   GET /api/jobs
+// @desc    Get all open job postings
+// @access  Public
+router.get('/', async (req, res) => {
+    try {
+        // Query the database to get all jobs with the status 'open'
+        // and order them by the newest first.
+        const allJobs = await pool.query(
+            "SELECT * FROM jobs WHERE status = 'open' ORDER BY created_at DESC"
+        );
+
+        // Respond with the array of job objects
+        res.json(allJobs.rows);
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+
 module.exports = router;
