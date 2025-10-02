@@ -25,4 +25,5 @@ app.get('/', (req, res) => res.send('ProxiWork API is running...'));
 app.use('/api/auth', require('./src/api/routes/authRoutes')); // --> /api/auth route
 app.use('/api/profiles', require('./src/api/routes/profileRoutes.js')); //-->profile route
 app.use('/api/jobs', require('./src/api/routes/jobRoutes.js')); //-->job route
+app.use('/api/proposals', require('./src/api/routes/proposalRoutes.js')); //-->proposal route
 app.listen(PORT, () => console.log(`Server is running on http://localhost:${PORT}`));
