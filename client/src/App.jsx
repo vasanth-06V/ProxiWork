@@ -1,16 +1,15 @@
 // client/src/App.jsx
-
 import { BrowserRouter } from 'react-router-dom';
-import AppRouter from './router'; // Correctly points to router/index.jsx
+import AppRouter from './router';
+import Navbar from './components/Navbar';
 
 function App() {
   return (
     <BrowserRouter>
-      <div>
-        {/* A Navbar could go here later */}
+      <Navbar />
+      <main style={{ paddingTop: '80px' }}> {/* Add padding to prevent content from hiding behind the fixed navbar */}
         <AppRouter />
-        {/* A Footer could go here later */}
-      </div>
+      </main>
     </BrowserRouter>
   );
 }

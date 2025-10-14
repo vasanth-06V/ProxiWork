@@ -1,0 +1,10 @@
+/* client/src/pages/HomePage.module.css */
+.container {
+    font-family: sans-serif;
+    padding: 50px;
+    color: #111827;
+}
+.link {
+    color: #2563eb;
+    text-decoration: underline;
+}
