@@ -47,44 +47,47 @@ router.post('/register', async (req, res) => {
 
 
 // @route   POST /api/auth/login
-// @desc    Authenticate user & get token
+// @desc    Authenticate user & get token with profile status
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
-
-    // 1. Validate input
     if (!email || !password) {
         return res.status(400).json({ msg: 'Please provide email and password' });
     }
 
     try {
-        // 2. Find the user by email in the database
+        // Step 1: Find the user by email
         const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
         if (userResult.rows.length === 0) {
             return res.status(400).json({ msg: 'Invalid Credentials' });
         }
-
         const user = userResult.rows[0];
 
-        // 3. Compare the provided password with the stored hashed password
+        // Step 2: Compare passwords
         const isMatch = await bcrypt.compare(password, user.password_hash);
         if (!isMatch) {
             return res.status(400).json({ msg: 'Invalid Credentials' });
         }
 
-        // 4. If credentials are correct, create the JWT payload
+        // --- NEW LOGIC STARTS HERE ---
+        // Step 3: Check if a profile exists for this user
+        const profileResult = await pool.query('SELECT 1 FROM profiles WHERE user_id = $1', [user.user_id]);
+        const hasProfile = profileResult.rows.length > 0;
+        // --- NEW LOGIC ENDS HERE ---
+
+        // Step 4: Create the enriched JWT payload
         const payload = {
             user: {
                 id: user.user_id,
-                role: user.role
+                role: user.role,
+                hasProfile: hasProfile // Add the new flag
             }
         };
-        //console.log('SECRET USED FOR SIGNING:', process.env.JWT_SECRET);
 
-        // 5. Sign the token with your secret key from the .env file
+        // Step 5: Sign and return the token
         jwt.sign(
             payload,
             process.env.JWT_SECRET,
-            { expiresIn: '1h' }, // Token is valid for 1 hour
+            { expiresIn: '1h' },
             (err, token) => {
                 if (err) throw err;
                 res.json({ token });

@@ -1,35 +1,50 @@
 // client/src/components/Navbar.jsx
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; // 1. Import the useAuth hook
+import { useAuth } from '../context/AuthContext';
 import styles from './Navbar.module.css';
 
 export default function Navbar() {
-  const { user, logout } = useAuth(); // 2. Get the user and logout function from context
+  const { user, logout } = useAuth();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   return (
     <nav className={styles.navbar}>
       <div className={styles.container}>
-        <Link to="/" className={styles.brand}>
-          ProxiWork
-        </Link>
+        <div className={styles.leftNav}> {/* Wrap brand and new link */}
+          <Link to="/" className={styles.brand}>
+            ProxiWork
+          </Link>
+          <Link to="/jobs" className={styles.link}> {/* Add "Find Work" link */}
+            Find Work
+          </Link>
+        </div>
         <div className={styles.navLinks}>
-          {user ? ( // 3. Check if the user object exists
-            <>
-              {/* This part is for LOGGED-IN users */}
-              <span className={styles.username}>Welcome, User ID: {user.id}</span>
-              <button onClick={logout} className={styles.link}>
-                Logout
+          {user ? (
+            <div className={styles.profileMenu}>
+              <button 
+                onClick={() => setDropdownOpen(!dropdownOpen)} 
+                className={styles.profileButton}
+              >
+                Profile &#9662;
               </button>
-            </>
+              {dropdownOpen && (
+                <div className={styles.dropdown}>
+                  {!user.hasProfile && (
+                     <Link to="/create-profile" className={styles.dropdownItemHighlight} onClick={() => setDropdownOpen(false)}>
+                        Complete Profile
+                     </Link>
+                  )}
+                  <button onClick={() => { logout(); setDropdownOpen(false); }} className={styles.dropdownItem}>
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <>
-              {/* This part is for LOGGED-OUT users */}
-              <Link to="/login" className={styles.link}>
-                Login
-              </Link>
-              <Link to="/register" className={`${styles.link} ${styles.registerButton}`}>
-                Register
-              </Link>
+              <Link to="/login" className={styles.link}>Login</Link>
+              <Link to="/register" className={`${styles.link} ${styles.registerButton}`}>Register</Link>
             </>
           )}
         </div>

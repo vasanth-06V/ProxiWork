@@ -1,0 +1,21 @@
+/* client/src/pages/JobBoardPage.module.css */
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+.title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 2rem;
+  text-align: center;
+  color: var(--text-primary);
+}
+.jobList {
+  display: grid;
+  gap: 1.5rem;
+}
+.error {
+  color: #ef4444; /* A brighter red for errors */
+  text-align: center;
+}

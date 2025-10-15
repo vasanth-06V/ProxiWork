@@ -2,14 +2,24 @@
 import { Routes, Route } from 'react-router-dom';
 import HomePage from '../pages/HomePage';
 import RegisterPage from '../pages/RegisterPage';
-import LoginPage from '../pages/LoginPage'; // <-- 1. Import the new page
+import LoginPage from '../pages/LoginPage';
+import CreateProfilePage from '../pages/CreateProfilePage';
+import JobBoardPage from '../pages/JobBoardPage';
+import JobDetailPage from '../pages/JobDetailPage'; // add this
+import ProtectedRoute from '../components/ProtectedRoute';
 
 export default function AppRouter() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/register" element={<RegisterPage />} />
-      <Route path="/login" element={<LoginPage />} /> {/* <-- 2. Add this new route */}
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/jobs" element={<JobBoardPage />} /> 
+      <Route path="/jobs/:jobId" element={<JobDetailPage />} />
+
+      <Route element={<ProtectedRoute />}>
+        <Route path="/create-profile" element={<CreateProfilePage />} />
+      </Route>
     </Routes>
   );
 }

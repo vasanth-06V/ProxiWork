@@ -7,7 +7,7 @@ function App() {
   return (
     <BrowserRouter>
       <Navbar />
-      <main style={{ paddingTop: '80px' }}> {/* Add padding to prevent content from hiding behind the fixed navbar */}
+      <main style={{ paddingTop: '80px' }}>
         <AppRouter />
       </main>
     </BrowserRouter>
