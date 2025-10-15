@@ -1,10 +1,10 @@
 // client/src/components/Navbar.jsx
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext'; // 1. Import the useAuth hook
 import styles from './Navbar.module.css';
 
 export default function Navbar() {
-  // We will add logic here later to show user profile if logged in
-  const isLoggedIn = false; 
+  const { user, logout } = useAuth(); // 2. Get the user and logout function from context
 
   return (
     <nav className={styles.navbar}>
@@ -13,14 +13,17 @@ export default function Navbar() {
           ProxiWork
         </Link>
         <div className={styles.navLinks}>
-          {isLoggedIn ? (
-            <div>
-              {/* This part will be shown when the user is logged in */}
-              <span className={styles.username}>Welcome, User!</span>
-            </div>
+          {user ? ( // 3. Check if the user object exists
+            <>
+              {/* This part is for LOGGED-IN users */}
+              <span className={styles.username}>Welcome, User ID: {user.id}</span>
+              <button onClick={logout} className={styles.link}>
+                Logout
+              </button>
+            </>
           ) : (
             <>
-              {/* This part is for logged-out users */}
+              {/* This part is for LOGGED-OUT users */}
               <Link to="/login" className={styles.link}>
                 Login
               </Link>
