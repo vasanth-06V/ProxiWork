@@ -11,11 +11,11 @@ export default function Navbar() {
   return (
     <nav className={styles.navbar}>
       <div className={styles.container}>
-        <div className={styles.leftNav}> {/* Wrap brand and new link */}
+        <div className={styles.leftNav}>
           <Link to="/" className={styles.brand}>
             ProxiWork
           </Link>
-          <Link to="/jobs" className={styles.link}> {/* Add "Find Work" link */}
+          <Link to="/jobs" className={styles.link}>
             Find Work
           </Link>
         </div>
@@ -30,10 +30,16 @@ export default function Navbar() {
               </button>
               {dropdownOpen && (
                 <div className={styles.dropdown}>
-                  {!user.hasProfile && (
-                     <Link to="/create-profile" className={styles.dropdownItemHighlight} onClick={() => setDropdownOpen(false)}>
-                        Complete Profile
-                     </Link>
+                  {user.hasProfile ? (
+                    // --- NEW: If profile is complete, show this ---
+                    <Link to="/profile" className={styles.dropdownItem} onClick={() => setDropdownOpen(false)}>
+                      View Profile
+                    </Link>
+                  ) : (
+                    // --- If profile is NOT complete, show this ---
+                    <Link to="/create-profile" className={styles.dropdownItemHighlight} onClick={() => setDropdownOpen(false)}>
+                       Complete Profile
+                    </Link>
                   )}
                   <button onClick={() => { logout(); setDropdownOpen(false); }} className={styles.dropdownItem}>
                     Logout

@@ -2,27 +2,22 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../../config/db');
-const authMiddleware = require('../../middleware/authMiddleware'); // Import our gatekeeper
+const authMiddleware = require('../../middleware/authMiddleware');
+const jwt = require('jsonwebtoken'); // 1. Import jsonwebtoken
 
 // @route   POST /api/profiles
-// @desc    Create or update a user profile
-// @access  Private (notice the authMiddleware here)
+// @desc    Create or update a user profile and return a new token
 router.post('/', authMiddleware, async (req, res) => {
-    // Destructure the profile fields from the request body
     const { fullName, tagline, bio, skills } = req.body;
-
-    // The user's ID is available from the token via our middleware
     const userId = req.user.id;
+    const userRole = req.user.role; // Get role from existing token
 
     try {
-        // We use a special SQL query called an "UPSERT".
-        // It will INSERT a new profile if one doesn't exist for the user_id.
-        // If one DOES exist, it will UPDATE it instead.
+        // --- The UPSERT query is the same as before ---
         const upsertQuery = `
             INSERT INTO profiles (user_id, full_name, tagline, bio, skills, updated_at)
             VALUES ($1, $2, $3, $4, $5, NOW())
-            ON CONFLICT (user_id)
-            DO UPDATE SET
+            ON CONFLICT (user_id) DO UPDATE SET
                 full_name = EXCLUDED.full_name,
                 tagline = EXCLUDED.tagline,
                 bio = EXCLUDED.bio,
@@ -30,11 +25,29 @@ router.post('/', authMiddleware, async (req, res) => {
                 updated_at = NOW()
             RETURNING *;
         `;
-
         const values = [userId, fullName, tagline, bio, skills];
         const result = await pool.query(upsertQuery, values);
+        const newProfile = result.rows[0];
 
-        res.json(result.rows[0]);
+        // --- NEW LOGIC: GENERATE A NEW, UPDATED TOKEN ---
+        const payload = {
+            user: {
+                id: userId,
+                role: userRole,
+                hasProfile: true // The new, correct status
+            }
+        };
+
+        jwt.sign(
+            payload,
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' },
+            (err, token) => {
+                if (err) throw err;
+                // Return both the new profile data AND the new token
+                res.json({ newProfile, token });
+            }
+        );
 
     } catch (err) {
         console.error(err.message);
