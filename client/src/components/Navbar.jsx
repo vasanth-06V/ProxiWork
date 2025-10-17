@@ -18,6 +18,11 @@ export default function Navbar() {
           <Link to="/jobs" className={styles.link}>
             Find Work
           </Link>
+          {user && user.role === 'client' && (
+            <Link to="/jobs/new" className={styles.link}>
+              Post a Job
+            </Link>
+          )}
         </div>
         <div className={styles.navLinks}>
           {user ? (

@@ -40,3 +40,8 @@ export const getJobById = (jobId) => {
 export const submitProposal = (jobId, proposalData) => {
   return apiClient.post(`/jobs/${jobId}/propose`, proposalData);
 };
+
+// Function to create a new job posting
+export const createJob = (jobData) => {
+  return apiClient.post('/jobs', jobData);
+};

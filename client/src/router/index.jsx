@@ -6,6 +6,7 @@ import LoginPage from '../pages/LoginPage';
 import CreateProfilePage from '../pages/CreateProfilePage';
 import JobBoardPage from '../pages/JobBoardPage';
 import JobDetailPage from '../pages/JobDetailPage'; // add this
+import PostJobPage from '../pages/PostJobPage';
 
 import ProtectedRoute from '../components/ProtectedRoute';
 
@@ -20,6 +21,7 @@ export default function AppRouter() {
 
       <Route element={<ProtectedRoute />}>
         <Route path="/create-profile" element={<CreateProfilePage />} />
+        <Route path="/jobs/new" element={<PostJobPage />} />
       </Route>
     </Routes>
   );
