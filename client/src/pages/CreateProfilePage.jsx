@@ -25,14 +25,17 @@ export default function CreateProfilePage() {
                 fullName,
                 tagline,
                 bio,
-                skills: skills.split(',').map(skill => skill.trim())
+                // Convert the comma-separated string of skills into an array
+                skills: skills.split(',').map(skill => skill.trim()).filter(skill => skill !== '')
             };
 
-            // The API call will now return a new token
+            // The API call will now return an object with the new profile AND a new token
             const response = await axios.post('http://localhost:5000/api/profiles', profileData);
 
-            // Use our new context function to update the app's state with the new token
-            updateToken(response.data.token);
+            // Use our context function to update the app's state with the new, updated token
+            if (response.data.token) {
+                updateToken(response.data.token);
+            }
             
             alert('Profile created successfully!');
             navigate('/'); // Redirect to home page
@@ -42,7 +45,6 @@ export default function CreateProfilePage() {
         }
     };
 
-    // ... (The return JSX with the form is the same as before)
     return (
         <div className={styles.container}>
             <div className={styles.formWrapper}>
