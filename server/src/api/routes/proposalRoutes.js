@@ -58,4 +58,32 @@ router.post('/:id/accept', authMiddleware, async (req, res) => {
     }
 });
 
+// @route   GET /api/proposals/my-proposals
+// @desc    Get all proposals submitted by the logged-in provider
+// @access  Private (Providers only)
+router.get('/my-proposals', authMiddleware, async (req, res) => {
+    // 1. Authorize: Make sure the user is a provider
+    if (req.user.role !== 'provider') {
+        return res.status(403).json({ msg: 'Forbidden: Access denied' });
+    }
+
+    try {
+        // 2. Fetch all proposals for this provider and JOIN with the jobs table
+        //    to also get the job title.
+        const proposals = await pool.query(
+            `SELECT p.proposal_id, p.status, p.bid_amount, p.created_at, j.title AS job_title
+             FROM proposals p
+             JOIN jobs j ON p.job_id = j.job_id
+             WHERE p.provider_id = $1
+             ORDER BY p.created_at DESC`,
+            [req.user.id]
+        );
+
+        res.json(proposals.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
 module.exports = router;
