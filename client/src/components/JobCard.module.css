@@ -75,3 +75,16 @@
 .statusOpen { background-color: #059669; color: white; }
 .statusInProgress { background-color: #d97706; color: white; }
 .statusCompleted { background-color: #6b7280; color: white; }
+
+.clientName {
+  font-style: italic;
+  color: var(--text-secondary);
+  margin: -0.5rem 0 1rem 0;
+  font-size: 0.9rem;
+}
+
+.deadline {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #f59e0b; /* Amber color for deadlines */
+}

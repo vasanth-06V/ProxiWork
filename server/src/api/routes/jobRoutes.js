@@ -45,7 +45,11 @@ router.get('/', async (req, res) => {
         // Query the database to get all jobs with the status 'open'
         // and order them by the newest first.
         const allJobs = await pool.query(
-            "SELECT * FROM jobs WHERE status = 'open' ORDER BY created_at DESC"
+            `SELECT j.job_id, j.title, j.description, j.budget, j.status, j.created_at, j.deadline, p.full_name AS client_name
+             FROM jobs j
+             LEFT JOIN profiles p ON j.client_id = p.user_id
+             WHERE j.status = 'open' 
+             ORDER BY j.created_at DESC`
         );
 
         // Respond with the array of job objects

@@ -1,24 +1,29 @@
 /* client/src/index.css */
-
-/* Define a dark theme color palette */
 :root {
-  --background-dark: #121212;
-  --surface-dark: #1E1E1E;
-  --primary-blue: #3b82f6;
-  --primary-blue-hover: #2563eb;
+  /* This is our default DARK THEME */
+  --background: #121212;
+  --surface: #1E1E1E;
   --text-primary: #EAEAEA;
   --text-secondary: #A0A0A0;
   --border-color: #444444;
+  --primary-blue: #3b82f6;
+  --primary-blue-hover: #2563eb;
+  --primary-green: #10b981;
 }
 
-/* Apply base styles to the entire app */
+/* This is our LIGHT THEME */
+[data-theme='light'] {
+  --background: #f9fafb;
+  --surface: #ffffff;
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --border-color: #e5e7eb;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: var(--background-dark);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--background);
   color: var(--text-primary);
+  transition: background-color 0.3s, color 0.3s;
 }
