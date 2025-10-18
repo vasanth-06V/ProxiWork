@@ -68,3 +68,8 @@ export const getProposalsForJob = (jobId) => {
 export const acceptProposal = (proposalId) => {
   return apiClient.post(`/proposals/${proposalId}/accept`);
 };
+
+// Function to get proposals for the logged-in provider
+export const getMyProposals = () => {
+  return apiClient.get('/proposals/my-proposals');
+};

@@ -24,6 +24,9 @@ export default function Navbar() {
           {user && user.role === 'client' && (
             <Link to="/dashboard" className={styles.link}>Dashboard</Link>
           )}
+          {user && user.role === 'provider' && (
+            <Link to="/my-proposals" className={styles.link}>My Proposals</Link>
+          )}
         </div>
         <div className={styles.navLinks}>
           {user ? (
