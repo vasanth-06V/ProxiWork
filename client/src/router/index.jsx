@@ -9,6 +9,7 @@ import JobDetailPage from '../pages/JobDetailPage'; // add this
 import PostJobPage from '../pages/PostJobPage';
 import DashboardPage from '../pages/DashboardPage';
 import ProtectedRoute from '../components/ProtectedRoute';
+import ViewProposalsPage from '../pages/ViewProposalsPage';
 
 export default function AppRouter() {
   return (
@@ -23,6 +24,7 @@ export default function AppRouter() {
         <Route path="/create-profile" element={<CreateProfilePage />} />
         <Route path="/jobs/new" element={<PostJobPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/jobs/:jobId/proposals" element={<ViewProposalsPage />} />
       </Route>
     </Routes>
   );

@@ -5,7 +5,6 @@ const apiClient = axios.create({
   baseURL: 'http://localhost:5000/api',
 });
 
-// --- THIS IS THE NEW, CRUCIAL PART ---
 // Add a request interceptor
 apiClient.interceptors.request.use(
   (config) => {
@@ -23,7 +22,6 @@ apiClient.interceptors.request.use(
     return Promise.reject(error);
   }
 );
-// --- END OF NEW PART ---
 
 
 // Function to fetch all open jobs
@@ -59,4 +57,14 @@ export const updateJob = (jobId, jobData) => {
 // Function to delete a job
 export const deleteJob = (jobId) => {
   return apiClient.delete(`/jobs/${jobId}`);
+};
+
+// Function to get all proposals for a specific job
+export const getProposalsForJob = (jobId) => {
+  return apiClient.get(`/jobs/${jobId}/proposals`);
+};
+
+// Function to accept a proposal
+export const acceptProposal = (proposalId) => {
+  return apiClient.post(`/proposals/${proposalId}/accept`);
 };

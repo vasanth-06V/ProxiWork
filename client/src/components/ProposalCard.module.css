@@ -1,0 +1,59 @@
+/* client/src/components/ProposalCard.module.css */
+.card {
+  background-color: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+.providerName {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+.bidAmount {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #60a5fa; /* Light blue */
+}
+.tagline {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin: 0 0 1rem 0;
+}
+.divider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 1rem 0;
+}
+.coverLetter {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  white-space: pre-wrap; /* Preserves line breaks in the cover letter */
+}
+.footer {
+  margin-top: 1.5rem;
+  text-align: right;
+}
+.acceptButton {
+  background-color: var(--primary-blue);
+  color: white;
+  padding: 0.6rem 1.5rem;
+  border: none;
+  border-radius: 0.375rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.acceptButton:hover {
+  background-color: var(--primary-blue-hover);
+}
+.acceptButton:disabled {
+  background-color: #4b5563;
+  cursor: not-allowed;
+}

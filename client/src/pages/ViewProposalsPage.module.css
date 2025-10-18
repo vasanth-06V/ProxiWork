@@ -1,0 +1,27 @@
+/* client/src/pages/ViewProposalsPage.module.css */
+.container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 2rem;
+}
+.title {
+    font-size: 2.25rem;
+    font-weight: bold;
+    margin-bottom: 2.5rem;
+    text-align: center;
+    color: var(--text-primary);
+}
+.proposalList {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+.centeredMessage {
+    text-align: center;
+    font-size: 1.2rem;
+    padding: 4rem 0;
+    color: var(--text-secondary);
+}
+.error {
+    color: #ef4444;
+}

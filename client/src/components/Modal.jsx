@@ -3,7 +3,7 @@ import styles from './Modal.module.css';
 
 export default function Modal({ isOpen, onClose, title, children }) {
   if (!isOpen) {
-    return null; // Don't render anything if the modal is not open
+    return null;
   }
 
   return (

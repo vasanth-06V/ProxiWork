@@ -57,6 +57,25 @@ router.get('/', async (req, res) => {
     }
 });
 
+// @route   GET /api/jobs/my-jobs
+// @desc    Get all jobs posted by the logged-in client
+// @access  Private (Clients only)
+router.get('/my-jobs', authMiddleware, async (req, res) => {
+    if (req.user.role !== 'client') {
+        return res.status(403).json({ msg: 'Forbidden: Access denied' });
+    }
+    try {
+        const myJobs = await pool.query(
+            "SELECT * FROM jobs WHERE client_id = $1 ORDER BY created_at DESC",
+            [req.user.id]
+        );
+        res.json(myJobs.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
 // @route   GET /api/jobs/:id
 // @desc    Get a single job by its ID
 // @access  Public
@@ -163,6 +182,57 @@ router.get('/:id/proposals', authMiddleware, async (req, res) => {
 
         res.json(proposals.rows);
 
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route   PUT /api/jobs/:id
+// @desc    Update a job posting
+// @access  Private (Job owner only)
+router.put('/:id', authMiddleware, async (req, res) => {
+    const { title, description, budget } = req.body;
+    const { id: jobId } = req.params;
+    const clientId = req.user.id;
+
+    try {
+        // This is the CRITICAL business rule check.
+        // The UPDATE will only succeed if the job_id and client_id match, AND the status is 'open'.
+        const updatedJob = await pool.query(
+            `UPDATE jobs SET title = $1, description = $2, budget = $3 
+             WHERE job_id = $4 AND client_id = $5 AND status = 'open' 
+             RETURNING *`,
+            [title, description, budget, jobId, clientId]
+        );
+
+        if (updatedJob.rows.length === 0) {
+            return res.status(403).json({ msg: 'Job cannot be edited or you are not the owner.' });
+        }
+        res.json(updatedJob.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route   DELETE /api/jobs/:id
+// @desc    Delete a job posting
+// @access  Private (Job owner only)
+router.delete('/:id', authMiddleware, async (req, res) => {
+    const { id: jobId } = req.params;
+    const clientId = req.user.id;
+    try {
+        // Similar to the UPDATE, this DELETE will only succeed if all conditions are met.
+        const deleteResult = await pool.query(
+            "DELETE FROM jobs WHERE job_id = $1 AND client_id = $2 AND status = 'open'",
+            [jobId, clientId]
+        );
+
+        if (deleteResult.rowCount === 0) {
+            return res.status(403).json({ msg: 'Job cannot be deleted or you are not the owner.' });
+        }
+        res.json({ msg: 'Job successfully deleted' });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
