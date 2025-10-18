@@ -45,3 +45,18 @@ export const submitProposal = (jobId, proposalData) => {
 export const createJob = (jobData) => {
   return apiClient.post('/jobs', jobData);
 };
+
+// Function to get jobs for the logged-in client
+export const getMyJobs = () => {
+  return apiClient.get('/jobs/my-jobs');
+};
+
+// Function to update a job
+export const updateJob = (jobId, jobData) => {
+  return apiClient.put(`/jobs/${jobId}`, jobData);
+};
+
+// Function to delete a job
+export const deleteJob = (jobId) => {
+  return apiClient.delete(`/jobs/${jobId}`);
+};

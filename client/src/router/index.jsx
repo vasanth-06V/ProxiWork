@@ -7,7 +7,7 @@ import CreateProfilePage from '../pages/CreateProfilePage';
 import JobBoardPage from '../pages/JobBoardPage';
 import JobDetailPage from '../pages/JobDetailPage'; // add this
 import PostJobPage from '../pages/PostJobPage';
-
+import DashboardPage from '../pages/DashboardPage';
 import ProtectedRoute from '../components/ProtectedRoute';
 
 export default function AppRouter() {
@@ -22,6 +22,7 @@ export default function AppRouter() {
       <Route element={<ProtectedRoute />}>
         <Route path="/create-profile" element={<CreateProfilePage />} />
         <Route path="/jobs/new" element={<PostJobPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
       </Route>
     </Routes>
   );

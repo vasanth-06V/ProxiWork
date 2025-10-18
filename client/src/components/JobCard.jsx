@@ -1,21 +1,40 @@
 // client/src/components/JobCard.jsx
-import { Link } from 'react-router-dom'; // 1. Import Link
+import { Link } from 'react-router-dom';
 import styles from './JobCard.module.css';
 
-export default function JobCard({ job }) {
-  const formattedBudget = new Intl.NumberFormat('en-IN', { /* ... */ }).format(job.budget);
-  const formattedDate = new Date(job.created_at).toLocaleDateString(/* ... */);
+// A helper function to get the right CSS class for each status
+const getStatusClass = (status) => {
+    switch(status) {
+        case 'open': return styles.statusOpen;
+        case 'in_progress': return styles.statusInProgress;
+        case 'completed': return styles.statusCompleted;
+        default: return '';
+    }
+};
 
-  // 2. Wrap the div in a Link component
+export default function JobCard({ job }) {
+  const formattedBudget = new Intl.NumberFormat('en-IN', {
+    style: 'currency', currency: 'INR', minimumFractionDigits: 0,
+  }).format(job.budget);
+
+  const formattedDate = new Date(job.created_at).toLocaleDateString('en-IN', {
+    day: 'numeric', month: 'long', year: 'numeric',
+  });
+
   return (
     <Link to={`/jobs/${job.job_id}`} className={styles.cardLink}>
       <div className={styles.card}>
-        <h3 className={styles.title}>{job.title}</h3>
+        <div className={styles.header}> {/* New header div */}
+          <h3 className={styles.title}>{job.title}</h3>
+          {/* --- THIS IS THE NEW STATUS BADGE --- */}
+          <span className={`${styles.statusBadge} ${getStatusClass(job.status)}`}>
+            {job.status.replace('_', ' ')}
+          </span>
+        </div>
         <p className={styles.budget}>{formattedBudget}</p>
         <p className={styles.description}>{job.description.substring(0, 150)}...</p>
         <div className={styles.footer}>
           <span className={styles.date}>Posted on: {formattedDate}</span>
-          {/* 3. The button is no longer needed, the whole card is the link! */}
         </div>
       </div>
     </Link>

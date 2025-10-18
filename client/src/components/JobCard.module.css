@@ -54,3 +54,24 @@
 .detailsButton:hover {
   background-color: var(--primary-blue-hover);
 }
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.statusBadge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.statusOpen { background-color: #059669; color: white; }
+.statusInProgress { background-color: #d97706; color: white; }
+.statusCompleted { background-color: #6b7280; color: white; }
