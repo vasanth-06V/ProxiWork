@@ -1,0 +1,80 @@
+/* client/src/pages/ProfilePage.module.css */
+.container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+}
+.profileCard {
+    background-color: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 2.5rem;
+}
+.header {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+    padding-bottom: 2.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.avatar {
+    width: 128px;
+    height: 128px;
+    border-radius: 9999px;
+    border: 3px solid var(--primary-blue);
+    object-fit: cover;
+}
+.headerText {
+    flex-grow: 1;
+}
+.fullName {
+    font-size: 2.25rem;
+    font-weight: bold;
+    color: var(--text-primary);
+    margin: 0;
+}
+.tagline {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    margin: 0.25rem 0 0.75rem 0;
+}
+.rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #f59e0b20; /* Amber background */
+    color: #f59e0b;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-weight: 600;
+}
+.section {
+    margin-bottom: 2.5rem;
+}
+.sectionTitle {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+.bio {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: var(--text-secondary);
+}
+.skillsContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+.skillTag {
+    background-color: var(--background);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    font-weight: 500;
+}
+.centeredMessage { text-align: center; font-size: 1.2rem; padding: 4rem 0; }
+.error { color: #ef4444; }

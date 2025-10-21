@@ -73,3 +73,13 @@ export const acceptProposal = (proposalId) => {
 export const getMyProposals = () => {
   return apiClient.get('/proposals/my-proposals');
 };
+
+// Function to get the profile for the logged-in user
+export const getMyProfile = () => {
+  return apiClient.get('/profiles/me');
+};
+
+// Function to submit a complaint
+export const submitComplaint = (complaintData) => {
+  return apiClient.post('/complaints', complaintData);
+};

@@ -62,6 +62,9 @@ export default function Navbar() {
                        Complete Profile
                     </Link>
                   )}
+                  <Link to="/complaint" className={styles.dropdownItem} onClick={() => setDropdownOpen(false)}>
+                    Support / Complaint
+                  </Link>
                   <button onClick={() => { logout(); setDropdownOpen(false); }} className={styles.dropdownItem}>
                     Logout
                   </button>

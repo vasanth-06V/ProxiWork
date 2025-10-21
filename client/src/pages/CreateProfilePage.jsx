@@ -1,5 +1,5 @@
 // client/src/pages/CreateProfilePage.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -10,9 +10,10 @@ export default function CreateProfilePage() {
     const [tagline, setTagline] = useState('');
     const [bio, setBio] = useState('');
     const [skills, setSkills] = useState('');
+    const [profileImageUrl, setProfileImageUrl] = useState(''); // New state
+    const [dateOfBirth, setDateOfBirth] = useState(''); // New state
     const [error, setError] = useState(null);
     
-    // Get the new updateToken function from our context
     const { updateToken } = useAuth();
     const navigate = useNavigate();
 
@@ -25,23 +26,22 @@ export default function CreateProfilePage() {
                 fullName,
                 tagline,
                 bio,
-                // Convert the comma-separated string of skills into an array
-                skills: skills.split(',').map(skill => skill.trim()).filter(skill => skill !== '')
+                skills: skills.split(',').map(skill => skill.trim()).filter(Boolean),
+                profile_image_url: profileImageUrl, // New field
+                date_of_birth: dateOfBirth, // New field
             };
 
-            // The API call will now return an object with the new profile AND a new token
             const response = await axios.post('http://localhost:5000/api/profiles', profileData);
 
-            // Use our context function to update the app's state with the new, updated token
             if (response.data.token) {
                 updateToken(response.data.token);
             }
             
-            alert('Profile created successfully!');
-            navigate('/'); // Redirect to home page
+            alert('Profile saved successfully!');
+            navigate('/profile'); // Navigate to their new profile page
 
         } catch (err) {
-            setError(err.response?.data?.msg || 'Failed to create profile.');
+            setError(err.response?.data?.msg || 'Failed to save profile.');
         }
     };
 
@@ -49,14 +49,27 @@ export default function CreateProfilePage() {
         <div className={styles.container}>
             <div className={styles.formWrapper}>
                 <h2 className={styles.title}>Create Your Profile</h2>
-                <p style={{textAlign: 'center', color: 'var(--text-secondary)', marginTop: '-1rem', marginBottom: '1.5rem'}}>
+                <p className={styles.subtitle}>
                     This information will be visible to potential clients.
                 </p>
                 <form onSubmit={handleSubmit} className={styles.form}>
+                    {/* --- NEW: Profile Image URL Input --- */}
+                    <div className={styles.inputGroup}>
+                        <label htmlFor="profileImageUrl" className={styles.label}>Profile Image URL</label>
+                        <input id="profileImageUrl" type="text" value={profileImageUrl} onChange={(e) => setProfileImageUrl(e.target.value)} className={styles.input} placeholder="https://..." />
+                    </div>
+                    
                     <div className={styles.inputGroup}>
                         <label htmlFor="fullName" className={styles.label}>Full Name</label>
                         <input id="fullName" type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} required className={styles.input} />
                     </div>
+                    
+                    {/* --- NEW: Date of Birth Input --- */}
+                     <div className={styles.inputGroup}>
+                        <label htmlFor="dateOfBirth" className={styles.label}>Date of Birth</label>
+                        <input id="dateOfBirth" type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} className={styles.input} />
+                    </div>
+
                     <div className={styles.inputGroup}>
                         <label htmlFor="tagline" className={styles.label}>Tagline / Professional Title</label>
                         <input id="tagline" type="text" value={tagline} onChange={(e) => setTagline(e.target.value)} required className={styles.input} placeholder="e.g., Expert Web Developer" />

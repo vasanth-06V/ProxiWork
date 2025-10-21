@@ -27,4 +27,7 @@ app.use('/api/auth', require('./src/api/routes/authRoutes')); // --> /api/auth r
 app.use('/api/profiles', require('./src/api/routes/profileRoutes.js')); //-->profile route
 app.use('/api/jobs', require('./src/api/routes/jobRoutes.js')); //-->job route
 app.use('/api/proposals', require('./src/api/routes/proposalRoutes.js')); //-->proposal route
+app.use('/api/complaints', require('./src/api/routes/complaintRoutes.js')); //-->complaint route
+
+// Start the server
 app.listen(PORT, () => console.log(`Server is running on http://localhost:${PORT}`));

@@ -8,6 +8,7 @@ export default function PostJobPage() {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [budget, setBudget] = useState('');
+    const [deadline, setDeadline] = useState('');
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
@@ -15,7 +16,7 @@ export default function PostJobPage() {
         e.preventDefault();
         setError(null);
         try {
-            const jobData = { title, description, budget: Number(budget) };
+            const jobData = { title, description, budget: Number(budget), deadline };
             const response = await createJob(jobData);
             // On success, navigate to the new job's detail page
             navigate(`/jobs/${response.data.job_id}`);
@@ -40,6 +41,10 @@ export default function PostJobPage() {
                     <div className={styles.inputGroup}>
                         <label htmlFor="budget" className={styles.label}>Budget (INR)</label>
                         <input id="budget" type="number" value={budget} onChange={(e) => setBudget(e.target.value)} required className={styles.input} placeholder="e.g., 50000" />
+                    </div>
+                    <div className={styles.inputGroup}>
+                        <label htmlFor="deadline" className={styles.label}>Application Deadline (Optional)</label>
+                        <input id="deadline" type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} className={styles.input} />
                     </div>
                     <button type="submit" className={styles.button}>Post Job</button>
                 </form>

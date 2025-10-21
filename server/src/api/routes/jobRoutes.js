@@ -13,7 +13,7 @@ router.post('/', authMiddleware, async (req, res) => {
         return res.status(403).json({ msg: 'Forbidden: Only clients can post jobs' });
     }
 
-    const { title, description, budget } = req.body;
+    const { title, description, budget, deadline } = req.body;
     const clientId = req.user.id;
 
     // Validate input
@@ -23,8 +23,8 @@ router.post('/', authMiddleware, async (req, res) => {
 
     try {
         const newJob = await pool.query(
-            'INSERT INTO jobs (client_id, title, description, budget) VALUES ($1, $2, $3, $4) RETURNING *',
-            [clientId, title, description, budget]
+            'INSERT INTO jobs (client_id, title, description, budget, deadline) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            [clientId, title, description, budget, deadline || null]
         );
 
         res.status(201).json(newJob.rows[0]);

@@ -11,6 +11,8 @@ import DashboardPage from '../pages/DashboardPage';
 import ProtectedRoute from '../components/ProtectedRoute';
 import ViewProposalsPage from '../pages/ViewProposalsPage';
 import ProviderDashboard from '../pages/ProviderDashboard';
+import ProfilePage from '../pages/ProfilePage';
+import ComplaintPage from '../pages/ComplaintPage';
 
 export default function AppRouter() {
   return (
@@ -27,6 +29,8 @@ export default function AppRouter() {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/my-proposals" element={<ProviderDashboard />} />
         <Route path="/jobs/:jobId/proposals" element={<ViewProposalsPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/complaint" element={<ComplaintPage />} />
       </Route>
     </Routes>
   );
