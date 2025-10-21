@@ -7,7 +7,7 @@ import { useTheme } from '../context/ThemeContext';
 import useClickOutside from '../hooks/useClickOutside';
 
 export default function Navbar() {
-  const { user, logout } = useAuth();
+  const { user, profile, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -47,6 +47,13 @@ export default function Navbar() {
                 onClick={() => setDropdownOpen(!dropdownOpen)} 
                 className={styles.profileButton}
               >
+                {profile && (
+                  <img 
+                    src={profile.profile_image_url || `https://ui-avatars.com/api/?name=${profile.full_name.replace(' ', '+')}&background=random`} 
+                    alt={profile.full_name}
+                    className={styles.navAvatar}
+                  />
+                )}
                 Profile &#9662;
               </button>
               {dropdownOpen && (

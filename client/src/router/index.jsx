@@ -3,7 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import HomePage from '../pages/HomePage';
 import RegisterPage from '../pages/RegisterPage';
 import LoginPage from '../pages/LoginPage';
-import CreateProfilePage from '../pages/CreateProfilePage';
+import EditProfilePage from '../pages/EditProfilePage';
 import JobBoardPage from '../pages/JobBoardPage';
 import JobDetailPage from '../pages/JobDetailPage';
 import PostJobPage from '../pages/PostJobPage';
@@ -24,7 +24,8 @@ export default function AppRouter() {
       <Route path="/jobs/:jobId" element={<JobDetailPage />} />
 
       <Route element={<ProtectedRoute />}>
-        <Route path="/create-profile" element={<CreateProfilePage />} />
+        <Route path="/create-profile" element={<EditProfilePage />} />
+        <Route path="/profile/edit" element={<EditProfilePage />} />
         <Route path="/jobs/new" element={<PostJobPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/my-proposals" element={<ProviderDashboard />} />

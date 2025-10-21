@@ -1,33 +1,62 @@
 // server/index.js
 require('dotenv').config();
-const cors = require('cors');
 const express = require('express');
-const pool = require('./src/config/db'); // Import from new location
+const { createServer } = require('http'); // 1. Import Node's built-in http server
+const { Server } = require('socket.io');   // 2. Import the Socket.IO Server class
+const pool = require('./src/config/db');
+const cors = require('cors');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const httpServer = createServer(app); // 3. Create an HTTP server from our Express app
 
-// --- MIDDLEWARE ---
-// This allows our server to accept JSON data in the body of requests
-app.use(cors());
-app.use(express.json());
-
-// Test DB Connection on startup
-pool.query('SELECT NOW()', (err, res) => {
-    if (err) {
-        console.error('Error connecting to the database:', err);
-    } else {
-        console.log('✅ Successfully connected to the PostgreSQL database!');
+// 4. Create a Socket.IO server that sits on top of our HTTP server
+const io = new Server(httpServer, { 
+    cors: {
+        origin: "http://localhost:5173", // Explicitly allow connections from our frontend
+        methods: ["GET", "POST"]
     }
 });
 
-// --- ROUTES ---
-app.get('/', (req, res) => res.send('ProxiWork API is running...'));
-app.use('/api/auth', require('./src/api/routes/authRoutes')); // --> /api/auth route
-app.use('/api/profiles', require('./src/api/routes/profileRoutes.js')); //-->profile route
-app.use('/api/jobs', require('./src/api/routes/jobRoutes.js')); //-->job route
-app.use('/api/proposals', require('./src/api/routes/proposalRoutes.js')); //-->proposal route
-app.use('/api/complaints', require('./src/api/routes/complaintRoutes.js')); //-->complaint route
+const PORT = process.env.PORT || 5000;
 
-// Start the server
-app.listen(PORT, () => console.log(`Server is running on http://localhost:${PORT}`));
+// --- MIDDLEWARE (No changes here) ---
+app.use(cors());
+app.use(express.json());
+
+// --- DATABASE CONNECTION TEST (No changes here) ---
+pool.query('SELECT NOW()', (err, res) => {
+    if (err) { console.error('Error connecting to the database:', err); } 
+    else { console.log('✅ Successfully connected to the PostgreSQL database!'); }
+});
+
+// --- API ROUTES (No changes here) ---
+app.use('/api/auth', require('./src/api/routes/authRoutes'));
+app.use('/api/profiles', require('./src/api/routes/profileRoutes.js'));
+app.use('/api/jobs', require('./src/api/routes/jobRoutes.js'));
+app.use('/api/proposals', require('./src/api/routes/proposalRoutes.js'));
+app.use('/api/complaints', require('./src/api/routes/complaintRoutes.js'));
+
+
+// --- REAL-TIME CHAT LOGIC ---
+io.on('connection', (socket) => {
+    console.log(`🔌 A user connected with socket ID: ${socket.id}`);
+
+    // This is the logic for a user joining a specific chat room
+    socket.on('join_project_room', (projectId) => {
+        socket.join(projectId);
+        console.log(`User ${socket.id} joined room for project ${projectId}`);
+    });
+
+    // This listens for a new message from a user
+    socket.on('send_message', (data) => {
+        // It then broadcasts that message to everyone else in the same project room
+        io.to(data.projectId).emit('receive_message', data);
+    });
+
+    socket.on('disconnect', () => {
+        console.log(`🔥 User with socket ID: ${socket.id} disconnected`);
+    });
+});
+
+// 5. Tell our httpServer to listen, not the old Express app
+httpServer.listen(PORT, () => console.log(`🚀 Server (API & Chat) is running on http://localhost:${PORT}`));

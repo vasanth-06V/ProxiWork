@@ -2,53 +2,68 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
+import { getMyProfile } from '../services/api'; // 1. Import getMyProfile
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(null); // From the token (for auth rules)
+  const [profile, setProfile] = useState(null); // Full profile data (for display)
   const [token, setToken] = useState(localStorage.getItem('token'));
-  const [loading, setLoading] = useState(true); // <-- 1. ADD LOADING STATE
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
+    const initializeAuth = async () => {
       const storedToken = localStorage.getItem('token');
       if (storedToken) {
-        axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
-        const decoded = jwtDecode(storedToken);
-        setUser(decoded.user);
-      } else {
-        setUser(null);
+        try {
+          axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+          const decoded = jwtDecode(storedToken);
+          setUser(decoded.user);
+
+          // If the token says we have a profile, fetch its details for the UI
+          if (decoded.user.hasProfile) {
+            const profileResponse = await getMyProfile();
+            setProfile(profileResponse.data);
+          }
+
+        } catch (error) {
+          // This will catch invalid/expired tokens
+          console.error("Auth initialization error:", error);
+          localStorage.removeItem('token');
+          setUser(null);
+          setProfile(null);
+        }
       }
-    } catch (error) {
-      console.error("Invalid token:", error);
-      setUser(null);
-      localStorage.removeItem('token');
-    } finally {
-      setLoading(false); // <-- 2. SET LOADING TO FALSE AFTER CHECK IS COMPLETE
-    }
+      setLoading(false);
+    };
+
+    initializeAuth();
   }, [token]);
 
   const login = async (email, password) => {
     const response = await axios.post('http://localhost:5000/api/auth/login', { email, password });
     localStorage.setItem('token', response.data.token);
-    setToken(response.data.token);
+    setToken(response.data.token); // This triggers the useEffect to run again
   };
 
   const logout = () => {
     localStorage.removeItem('token');
     setToken(null);
+    setUser(null);
+    setProfile(null); // Clear profile on logout
   };
-
+  
   const updateToken = (newToken) => {
     localStorage.setItem('token', newToken);
-    setToken(newToken); // This will re-run the useEffect and update the user state
+    setToken(newToken); // This triggers the useEffect to run again
   };
 
   const authContextValue = {
     user,
+    profile, // 2. Expose the profile data
     token,
-    loading, // <-- 3. EXPOSE LOADING STATE
+    loading,
     login,
     logout,
     updateToken,
@@ -56,7 +71,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={authContextValue}>
-      {children}
+      {!loading && children} {/* Only render children when auth check is complete */}
     </AuthContext.Provider>
   );
 }
