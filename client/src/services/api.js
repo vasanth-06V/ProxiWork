@@ -83,3 +83,8 @@ export const getMyProfile = () => {
 export const submitComplaint = (complaintData) => {
   return apiClient.post('/complaints', complaintData);
 };
+
+// Function to get chat history for a project
+export const getMessagesForProject = (projectId) => {
+  return apiClient.get(`/projects/${projectId}/messages`);
+};

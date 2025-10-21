@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { getMyProposals } from '../services/api';
 import styles from './ProviderDashboard.module.css';
+import { Link } from 'react-router-dom';
 
 // Helper function for styling the status badges
 const getStatusClass = (status) => {
@@ -43,11 +44,16 @@ export default function ProviderDashboard() {
                     <div key={proposal.proposal_id} className={styles.proposalCard}>
                         <div>
                             <h2 className={styles.jobTitle}>{proposal.job_title}</h2>
-                            <p className={styles.bid}>Your Bid: {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(proposal.bid_amount)}</p>
+                            <p className={styles.bid}>Your Bid: {new Intl.NumberFormat(/*...*/).format(proposal.bid_amount)}</p>
                         </div>
-                        <span className={`${styles.statusBadge} ${getStatusClass(proposal.status)}`}>
-                            {proposal.status}
-                        </span>
+                        <div className={styles.actions}> {/* Add a container for actions */}
+                            {proposal.status === 'accepted' && (
+                                <Link to={`/projects/${proposal.job_id}/chat`} className={styles.chatButton}>Chat with Client</Link>
+                            )}
+                            <span className={`${styles.statusBadge} ${getStatusClass(proposal.status)}`}>
+                                {proposal.status}
+                            </span>
+                        </div>
                     </div>
                 )) : (
                     <p className={styles.centeredMessage}>You have not submitted any proposals yet.</p>

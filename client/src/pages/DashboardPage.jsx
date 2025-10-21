@@ -89,6 +89,10 @@ export default function DashboardPage() {
                             </div>
                             <p className={styles.jobDescription}>{job.description.substring(0, 200)}...</p>
                             <div className={styles.jobActions}>
+                                {/* Show a "Chat" button for in-progress jobs */}
+                                {job.status === 'in_progress' && (
+                                     <Link to={`/projects/${job.job_id}/chat`} className={styles.actionButton}>Chat with Provider</Link>
+                                )}
                                 <Link to={`/jobs/${job.job_id}/proposals`} className={styles.actionButton}>View Proposals</Link>
                                 {/* --- Wire up the Edit button --- */}
                                 <button 

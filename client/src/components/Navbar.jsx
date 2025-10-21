@@ -36,6 +36,9 @@ export default function Navbar() {
           {user && user.role === 'provider' && (
             <Link to="/my-proposals" className={styles.link}>My Proposals</Link>
           )}
+          {user && (
+            <Link to="/messages" className={styles.link}>Chat</Link>
+          )}
         </div>
         <div className={styles.navLinks}>
           <button onClick={toggleTheme} className={styles.themeToggle}>

@@ -71,7 +71,7 @@ router.get('/my-proposals', authMiddleware, async (req, res) => {
         // 2. Fetch all proposals for this provider and JOIN with the jobs table
         //    to also get the job title.
         const proposals = await pool.query(
-            `SELECT p.proposal_id, p.status, p.bid_amount, p.created_at, j.title AS job_title
+            `SELECT p.proposal_id, p.status, p.bid_amount, p.created_at, j.job_id, j.title AS job_title
              FROM proposals p
              JOIN jobs j ON p.job_id = j.job_id
              WHERE p.provider_id = $1

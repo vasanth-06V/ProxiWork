@@ -35,6 +35,7 @@ app.use('/api/profiles', require('./src/api/routes/profileRoutes.js'));
 app.use('/api/jobs', require('./src/api/routes/jobRoutes.js'));
 app.use('/api/proposals', require('./src/api/routes/proposalRoutes.js'));
 app.use('/api/complaints', require('./src/api/routes/complaintRoutes.js'));
+app.use('/api/projects', require('./src/api/routes/projectRoutes.js'));
 
 
 // --- REAL-TIME CHAT LOGIC ---
@@ -48,9 +49,21 @@ io.on('connection', (socket) => {
     });
 
     // This listens for a new message from a user
-    socket.on('send_message', (data) => {
-        // It then broadcasts that message to everyone else in the same project room
-        io.to(data.projectId).emit('receive_message', data);
+    socket.on('send_message', async (data) => {
+        try {
+            // --- NEW: Save message to the database ---
+            const { projectId, senderId, content } = data;
+            await pool.query(
+                'INSERT INTO messages (project_id, sender_id, content) VALUES ($1, $2, $3)',
+                [projectId, senderId, content]
+            );
+            // --- END NEW ---
+
+            // Broadcast the message to everyone in the specific project room
+            io.to(data.projectId).emit('receive_message', data);
+        } catch (err) {
+            console.error("Error saving message:", err);
+        }
     });
 
     socket.on('disconnect', () => {

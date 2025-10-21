@@ -13,6 +13,7 @@ import ViewProposalsPage from '../pages/ViewProposalsPage';
 import ProviderDashboard from '../pages/ProviderDashboard';
 import ProfilePage from '../pages/ProfilePage';
 import ComplaintPage from '../pages/ComplaintPage';
+import ChatPage from '../pages/ChatPage';
 
 export default function AppRouter() {
   return (
@@ -32,6 +33,7 @@ export default function AppRouter() {
         <Route path="/jobs/:jobId/proposals" element={<ViewProposalsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/complaint" element={<ComplaintPage />} />
+        <Route path="/projects/:projectId/chat" element={<ChatPage />} />
       </Route>
     </Routes>
   );
