@@ -51,6 +51,20 @@
     color: #9ca3af;
     cursor: not-allowed;
 }
+.completeButton { /* NEW */
+    background-color: var(--primary-green);
+    color: white;
+}
+.completeButton:hover {
+     background-color: var(--primary-green-hover);
+}
+.rateButton { /* NEW */
+     background-color: #f59e0b; /* Amber */
+     color: white;
+}
+.rateButton:hover {
+    background-color: #d97706;
+}
 .deleteButton:not(:disabled) { background-color: #b91c1c; }
 .statusBadge {
     padding: 0.25rem 0.75rem;

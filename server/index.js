@@ -36,6 +36,7 @@ app.use('/api/jobs', require('./src/api/routes/jobRoutes.js'));
 app.use('/api/proposals', require('./src/api/routes/proposalRoutes.js'));
 app.use('/api/complaints', require('./src/api/routes/complaintRoutes.js'));
 app.use('/api/projects', require('./src/api/routes/projectRoutes.js'));
+app.use('/api/ratings', require('./src/api/routes/ratingRoutes.js'));
 
 
 // --- REAL-TIME CHAT LOGIC ---

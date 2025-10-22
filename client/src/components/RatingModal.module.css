@@ -1,0 +1,123 @@
+/* RatingModal.module.css - ensure the rating form has a visible border/panel */
+
+/* Fallback variables if they are not defined globally */
+:root{
+  --surface: rgba(25,25,25,0.98);
+  --panel-border: rgba(255,255,255,0.06);
+  --input-bg: rgba(255,255,255,0.03);
+  --input-border: rgba(255,255,255,0.04);
+  --text-primary: #e6e6e6;
+  --text-secondary: rgba(255,255,255,0.75);
+  --accent: #f59e0b;
+  --primary-green: #35a86b;
+  --primary-green-hover: #2f8d58;
+  --danger: #ef4444;
+}
+
+/* Make modal body opaque and visually separated from modal chrome */
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+
+    /* important visual fixes */
+    background-color: var(--surface);
+    padding: 20px;                 /* provide inner spacing so border isn't flush */
+    margin: 12px;                  /* create inset from the modal chrome */
+    border-radius: 8px;            /* rounded inner panel */
+    border: 1px solid var(--panel-border); /* subtle border so it shows on dark bg */
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6); /* lift the panel */
+    z-index: 2;
+    color: var(--text-primary);
+}
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+}
+
+.label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+/* Star rating */
+.starContainer {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.star {
+  font-size: 2.2rem;
+  color: #6b7280;
+  cursor: pointer;
+  transition: color 0.2s, transform 0.12s;
+}
+.star:hover { transform: translateY(-3px); }
+.star.filled { color: var(--accent); }
+
+/* Textarea */
+.textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--input-border);
+    border-radius: 0.375rem;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    min-height: 100px;
+    resize: vertical;
+}
+.textarea::placeholder { color: rgba(230,230,230,0.35); }
+.textarea:focus {
+    outline: none;
+    border-color: rgba(59,130,246,0.9);
+    box-shadow: 0 4px 18px rgba(59,130,246,0.12);
+}
+
+/* Error */
+.error {
+    font-size: 0.875rem;
+    color: var(--danger);
+    margin: 0;
+}
+
+/* Button row */
+.buttonGroup {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.03);
+}
+
+.button {
+    padding: 0.6rem 1.25rem;
+    border: none;
+    border-radius: 0.375rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+.cancelButton {
+    background-color: #4b5563;
+    color: white;
+}
+.cancelButton:hover { background-color: #374151; }
+
+.submitButton {
+    background-color: var(--primary-green);
+    color: white;
+}
+.submitButton:hover { background-color: var(--primary-green-hover); }
+
+/* Small screens */
+@media (max-width:520px) {
+  .form { margin: 10px; padding: 16px; }
+  .star { font-size: 1.9rem; }
+}

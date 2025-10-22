@@ -1,6 +1,6 @@
 // client/src/pages/ProviderDashboard.jsx
 import { useState, useEffect } from 'react';
-import { getMyProposals } from '../services/api';
+import { getMyProposals,submitWork } from '../services/api';
 import styles from './ProviderDashboard.module.css';
 import { Link } from 'react-router-dom';
 
@@ -19,8 +19,7 @@ export default function ProviderDashboard() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    useEffect(() => {
-        const fetchMyProposals = async () => {
+    const fetchMyProposals = async () => {
             try {
                 const response = await getMyProposals();
                 setProposals(response.data);
@@ -30,8 +29,25 @@ export default function ProviderDashboard() {
                 setLoading(false);
             }
         };
+
+    useEffect(() => {
         fetchMyProposals();
     }, []);
+
+    const handleSubmitWork = async (jobId) => {
+        if (window.confirm('Are you sure you want to submit the final work for this project?')) {
+            try {
+                await submitWork(jobId);
+                alert('Work submitted successfully!');
+                fetchMyProposals();
+            } catch (err) {
+                console.error("Submit Work Error Details:", err.response || err); 
+                
+                // Keep the existing alert
+                alert(err.response?.data?.msg || 'Failed to submit work.'); 
+            }
+        }
+    };
 
     if (loading) return <p className={styles.centeredMessage}>Loading your proposals...</p>;
     if (error) return <p className={`${styles.centeredMessage} ${styles.error}`}>{error}</p>;
@@ -45,8 +61,17 @@ export default function ProviderDashboard() {
                         <div>
                             <h2 className={styles.jobTitle}>{proposal.job_title}</h2>
                             <p className={styles.bid}>Your Bid: {new Intl.NumberFormat(/*...*/).format(proposal.bid_amount)}</p>
+                            <p className={styles.jobStatus}>Job Status: {proposal.job_status || 'N/A'}</p>
                         </div>
-                        <div className={styles.actions}> {/* Add a container for actions */}
+                        <div className={styles.actions}>
+                            {proposal.status === 'accepted' && proposal.job_status === 'in_progress' && (
+                                <button 
+                                    onClick={() => handleSubmitWork(proposal.job_id)} 
+                                    className={styles.submitButton}
+                                >
+                                    Submit Final Work
+                                </button>
+                            )}
                             {proposal.status === 'accepted' && (
                                 <Link to={`/projects/${proposal.job_id}/chat`} className={styles.chatButton}>Chat with Client</Link>
                             )}

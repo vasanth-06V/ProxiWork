@@ -1,7 +1,7 @@
 // client/src/pages/ViewProposalsPage.jsx
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getJobById, getProposalsForJob, acceptProposal } from '../services/api';
+import { getJobById, getProposalsForJob, acceptProposal, rejectProposal } from '../services/api';
 import ProposalCard from '../components/ProposalCard';
 import styles from './ViewProposalsPage.module.css';
 
@@ -42,6 +42,21 @@ export default function ViewProposalsPage() {
             }
         }
     };
+
+    const handleRejectProposal = async (proposalId) => {
+        if (window.confirm('Are you sure you want to reject this proposal?')) {
+            try {
+                await rejectProposal(proposalId);
+                // Refresh the list to show the 'rejected' status visually
+                setProposals(prev => prev.map(p => 
+                    p.proposal_id === proposalId ? { ...p, status: 'rejected' } : p
+                ));
+                alert('Proposal rejected.');
+            } catch (err) {
+                alert('Failed to reject proposal. Please try again.');
+            }
+        }
+    };
     
     if (loading) return <p className={styles.centeredMessage}>Loading proposals...</p>;
     if (error) return <p className={`${styles.centeredMessage} ${styles.error}`}>{error}</p>;
@@ -56,6 +71,7 @@ export default function ViewProposalsPage() {
                             key={p.proposal_id} 
                             proposal={p}
                             onAccept={handleAcceptProposal}
+                            onReject={handleRejectProposal}
                             isJobOpen={job?.status === 'open'}
                         />
                     ))}

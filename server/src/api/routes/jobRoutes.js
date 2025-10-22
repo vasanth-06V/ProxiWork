@@ -243,4 +243,87 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     }
 });
 
+// @route   POST /api/jobs/:id/submit
+// @desc    Provider submits work for review
+// @access  Private (Assigned Provider only)
+router.post('/:id/submit', authMiddleware, async (req, res) => {
+    const { id: jobId } = req.params;
+    const providerId = req.user.id;
+
+    // We get a connection for potential transaction (though simple here)
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        // 1. Verify provider is assigned to this job (proposal accepted)
+        const proposalCheck = await client.query(
+            `SELECT 1 FROM proposals 
+             WHERE job_id = $1 AND provider_id = $2 AND status = 'accepted'`,
+            [jobId, providerId]
+        );
+        if (proposalCheck.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(403).json({ msg: 'Forbidden: You are not the assigned provider for this job.' });
+        }
+
+        // 2. Update job status to 'submitted'
+        const updatedJob = await client.query(
+            "UPDATE jobs SET status = 'submitted' WHERE job_id = $1 AND status = 'in_progress' RETURNING *",
+            [jobId]
+        );
+         if (updatedJob.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ msg: 'Job is not currently in progress or not found.' });
+        }
+
+        await client.query('COMMIT');
+        res.json({ msg: 'Work submitted successfully.', job: updatedJob.rows[0] });
+
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    } finally {
+        client.release();
+    }
+});
+
+// @route   POST /api/jobs/:id/complete
+// @desc    Client marks job as complete (simulates payment release)
+// @access  Private (Job owner only)
+router.post('/:id/complete', authMiddleware, async (req, res) => {
+    const { id: jobId } = req.params;
+    const clientId = req.user.id;
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // 1. Authorize: Verify client owns the job AND job status is 'submitted'
+        const updatedJob = await client.query(
+            `UPDATE jobs SET status = 'completed' 
+             WHERE job_id = $1 AND client_id = $2 AND status = 'submitted' 
+             RETURNING *`,
+            [jobId, clientId]
+        );
+
+        if (updatedJob.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(403).json({ msg: 'Cannot complete job or you are not the owner. Ensure work was submitted.' });
+        }
+        
+        // --- Here you would normally trigger the actual payment release ---
+        console.log(`SIMULATING PAYMENT RELEASE for job ${jobId}`);
+
+        await client.query('COMMIT');
+        res.json({ msg: 'Job marked as complete. Payment released (simulation).', job: updatedJob.rows[0] });
+
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    } finally {
+        client.release();
+    }
+});
+
 module.exports = router;

@@ -88,3 +88,23 @@ export const submitComplaint = (complaintData) => {
 export const getMessagesForProject = (projectId) => {
   return apiClient.get(`/projects/${projectId}/messages`);
 };
+
+// Function to reject a proposal
+export const rejectProposal = (proposalId) => {
+  return apiClient.post(`/proposals/${proposalId}/reject`);
+};
+
+// Function for provider to submit work
+export const submitWork = (jobId) => {
+  return apiClient.post(`/jobs/${jobId}/submit`);
+};
+
+// Function for client to complete the job (release payment simulation)
+export const completeJob = (jobId) => {
+  return apiClient.post(`/jobs/${jobId}/complete`);
+};
+
+// Function for client to submit a rating
+export const submitRating = (jobId, ratingData) => {
+  return apiClient.post(`/ratings/job/${jobId}`, ratingData);
+};

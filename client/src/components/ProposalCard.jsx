@@ -17,11 +17,17 @@ export default function ProposalCard({ proposal, onAccept, isJobOpen }) {
       <div className={styles.divider}></div>
       <p className={styles.coverLetter}>{proposal.cover_letter}</p>
       <div className={styles.footer}>
-        {/* The button is only enabled if the job is still open */}
+        <button 
+          onClick={() => onReject(proposal.proposal_id)}
+          disabled={!isJobOpen}
+          className={`${styles.actionButton} ${styles.rejectButton}`}
+        >
+          Reject
+        </button>
         <button 
           onClick={() => onAccept(proposal.proposal_id)}
           disabled={!isJobOpen}
-          className={styles.acceptButton}
+          className={`${styles.actionButton} ${styles.acceptButton}`}
         >
           Accept Proposal
         </button>
