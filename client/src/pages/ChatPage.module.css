@@ -72,6 +72,26 @@
     border-radius: 0.5rem;
     font-size: 1rem;
 }
+
+.chatImage {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 0.5rem;
+    margin-top: 0.5rem;
+    cursor: pointer;
+}
+.attachButton {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    margin-right: 0.5rem;
+    color: var(--text-secondary);
+}
+.fileLink {
+    color: inherit;
+    text-decoration: underline;
+}
 .sendButton {
     background-color: var(--primary-blue);
     color: white;
@@ -82,3 +102,4 @@
     font-weight: 600;
     cursor: pointer;
 }
+

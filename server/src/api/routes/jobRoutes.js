@@ -1,329 +1,58 @@
 // server/src/api/routes/jobRoutes.js
 const express = require('express');
 const router = express.Router();
-const pool = require('../../config/db');
+
 const authMiddleware = require('../../middleware/authMiddleware');
+const jobController = require('../controllers/jobController');
 
 // @route   POST /api/jobs
 // @desc    Create a new job posting
 // @access  Private (Clients only)
-router.post('/', authMiddleware, async (req, res) => {
-    // First, check the user's role. This is our Authorization step.
-    if (req.user.role !== 'client') {
-        return res.status(403).json({ msg: 'Forbidden: Only clients can post jobs' });
-    }
-
-    const { title, description, budget, deadline } = req.body;
-    const clientId = req.user.id;
-
-    // Validate input
-    if (!title || !description) {
-        return res.status(400).json({ msg: 'Please provide a title and description' });
-    }
-
-    try {
-        const newJob = await pool.query(
-            'INSERT INTO jobs (client_id, title, description, budget, deadline) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-            [clientId, title, description, budget, deadline || null]
-        );
-
-        res.status(201).json(newJob.rows[0]);
-
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
-    }
-});
-
-
-
-// @route   GET /api/jobs
-// @desc    Get all open job postings
-// @access  Public
-router.get('/', async (req, res) => {
-    try {
-        // Query the database to get all jobs with the status 'open'
-        // and order them by the newest first.
-        const allJobs = await pool.query(
-            `SELECT j.job_id, j.title, j.description, j.budget, j.status, j.created_at, j.deadline, p.full_name AS client_name
-             FROM jobs j
-             LEFT JOIN profiles p ON j.client_id = p.user_id
-             WHERE j.status = 'open' 
-             ORDER BY j.created_at DESC`
-        );
-
-        // Respond with the array of job objects
-        res.json(allJobs.rows);
-
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
-    }
-});
+router.post('/', authMiddleware, jobController.createJob);
 
 // @route   GET /api/jobs/my-jobs
 // @desc    Get all jobs posted by the logged-in client
 // @access  Private (Clients only)
-router.get('/my-jobs', authMiddleware, async (req, res) => {
-    if (req.user.role !== 'client') {
-        return res.status(403).json({ msg: 'Forbidden: Access denied' });
-    }
-    try {
-        const myJobs = await pool.query(
-            "SELECT * FROM jobs WHERE client_id = $1 ORDER BY created_at DESC",
-            [req.user.id]
-        );
-        res.json(myJobs.rows);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
-    }
-});
+router.get('/my-jobs', authMiddleware, jobController.getMyJobs);
+
+// @route   GET /api/jobs
+// @desc    Get all open job postings
+// @access  Public
+router.get('/', jobController.getAllJobs);
 
 // @route   GET /api/jobs/:id
 // @desc    Get a single job by its ID
 // @access  Public
-router.get('/:id', async (req, res) => {
-    try {
-        // Get the job ID from the URL parameter
-        const { id } = req.params;
+router.get('/:id', jobController.getJobById);
 
-        const job = await pool.query(
-            "SELECT * FROM jobs WHERE job_id = $1",
-            [id]
-        );
-
-        // If no job is found with that ID, return a 404 error
-        if (job.rows.length === 0) {
-            return res.status(404).json({ msg: 'Job not found' });
-        }
-
-        // If a job is found, return it
-        res.json(job.rows[0]);
-
-    } catch (err) {
-        console.error(err.message);
-        // Check for invalid UUID format or other potential errors
-        if (err.kind === 'ObjectId' || err.name === 'CastError') {
-             return res.status(404).json({ msg: 'Job not found' });
-        }
-        res.status(500).send('Server Error');
-    }
-});
+// @route   GET /api/jobs/:id/proposals
+// @desc    Get all proposals for a specific job
+// @access  Private (Job owner only)
+router.get('/:id/proposals', authMiddleware, jobController.getProposalsForJob);
 
 // @route   POST /api/jobs/:id/propose
 // @desc    Submit a proposal for a specific job
 // @access  Private (Providers only)
-router.post('/:id/propose', authMiddleware, async (req, res) => {
-    // First, we authorize: only 'provider' roles can access this.
-    if (req.user.role !== 'provider') {
-        return res.status(403).json({ msg: 'Forbidden: Only providers can submit proposals' });
-    }
-
-    const { cover_letter, bid_amount } = req.body;
-    const { id: jobId } = req.params;   // Get job_id from the URL
-    const providerId = req.user.id;     // Get provider_id from the JWT
-
-    // Basic validation
-    if (!cover_letter) {
-        return res.status(400).json({ msg: 'A cover letter is required to submit a proposal' });
-    }
-
-    try {
-        const newProposal = await pool.query(
-            `INSERT INTO proposals (job_id, provider_id, cover_letter, bid_amount) 
-             VALUES ($1, $2, $3, $4) RETURNING *`,
-            [jobId, providerId, cover_letter, bid_amount]
-        );
-
-        res.status(201).json(newProposal.rows[0]);
-
-    } catch (err) {
-        // This is a special error handler. '23505' is the PostgreSQL error code
-        // for a "unique_violation", which our UNIQUE(job_id, provider_id) constraint triggers.
-        if (err.code === '23505') {
-            return res.status(400).json({ msg: 'You have already submitted a proposal for this job' });
-        }
-        console.error(err.message);
-        res.status(500).send('Server Error');
-    }
-});
-
-// @route   GET /api/jobs/:id/proposals
-// @desc    Get all proposals for a specific job owned by the client
-// @access  Private (Job owner only)
-router.get('/:id/proposals', authMiddleware, async (req, res) => {
-    const { id: jobId } = req.params;   // Get job_id from the URL
-    const clientId = req.user.id;       // Get the logged-in user's ID from the token
-
-    try {
-        // 1. Authorize: First, verify the logged-in user is the owner of the job.
-        const job = await pool.query(
-            "SELECT client_id FROM jobs WHERE job_id = $1",
-            [jobId]
-        );
-
-        // Check if the job exists
-        if (job.rows.length === 0) {
-            return res.status(404).json({ msg: 'Job not found' });
-        }
-
-        // Check if the logged-in user is the one who created the job
-        if (job.rows[0].client_id !== clientId) {
-            return res.status(403).json({ msg: 'Forbidden: You are not the owner of this job and cannot view its proposals' });
-        }
-
-        // 2. If authorized, fetch all proposals for that job.
-        // We use a JOIN to combine data from the 'proposals' and 'profiles' tables.
-        const proposals = await pool.query(
-            `SELECT p.proposal_id, p.cover_letter, p.bid_amount, p.status, p.created_at, pr.full_name, pr.tagline 
-             FROM proposals p
-             JOIN profiles pr ON p.provider_id = pr.user_id
-             WHERE p.job_id = $1
-             ORDER BY p.created_at ASC`, // Show oldest proposals first
-            [jobId]
-        );
-
-        res.json(proposals.rows);
-
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
-    }
-});
-
-// @route   PUT /api/jobs/:id
-// @desc    Update a job posting
-// @access  Private (Job owner only)
-router.put('/:id', authMiddleware, async (req, res) => {
-    const { title, description, budget } = req.body;
-    const { id: jobId } = req.params;
-    const clientId = req.user.id;
-
-    try {
-        // This is the CRITICAL business rule check.
-        // The UPDATE will only succeed if the job_id and client_id match, AND the status is 'open'.
-        const updatedJob = await pool.query(
-            `UPDATE jobs SET title = $1, description = $2, budget = $3 
-             WHERE job_id = $4 AND client_id = $5 AND status = 'open' 
-             RETURNING *`,
-            [title, description, budget, jobId, clientId]
-        );
-
-        if (updatedJob.rows.length === 0) {
-            return res.status(403).json({ msg: 'Job cannot be edited or you are not the owner.' });
-        }
-        res.json(updatedJob.rows[0]);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
-    }
-});
-
-// @route   DELETE /api/jobs/:id
-// @desc    Delete a job posting
-// @access  Private (Job owner only)
-router.delete('/:id', authMiddleware, async (req, res) => {
-    const { id: jobId } = req.params;
-    const clientId = req.user.id;
-    try {
-        // Similar to the UPDATE, this DELETE will only succeed if all conditions are met.
-        const deleteResult = await pool.query(
-            "DELETE FROM jobs WHERE job_id = $1 AND client_id = $2 AND status = 'open'",
-            [jobId, clientId]
-        );
-
-        if (deleteResult.rowCount === 0) {
-            return res.status(403).json({ msg: 'Job cannot be deleted or you are not the owner.' });
-        }
-        res.json({ msg: 'Job successfully deleted' });
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
-    }
-});
+router.post('/:id/propose', authMiddleware, jobController.submitProposal);
 
 // @route   POST /api/jobs/:id/submit
 // @desc    Provider submits work for review
 // @access  Private (Assigned Provider only)
-router.post('/:id/submit', authMiddleware, async (req, res) => {
-    const { id: jobId } = req.params;
-    const providerId = req.user.id;
-
-    // We get a connection for potential transaction (though simple here)
-    const client = await pool.connect();
-    try {
-        await client.query('BEGIN');
-        // 1. Verify provider is assigned to this job (proposal accepted)
-        const proposalCheck = await client.query(
-            `SELECT 1 FROM proposals 
-             WHERE job_id = $1 AND provider_id = $2 AND status = 'accepted'`,
-            [jobId, providerId]
-        );
-        if (proposalCheck.rows.length === 0) {
-            await client.query('ROLLBACK');
-            return res.status(403).json({ msg: 'Forbidden: You are not the assigned provider for this job.' });
-        }
-
-        // 2. Update job status to 'submitted'
-        const updatedJob = await client.query(
-            "UPDATE jobs SET status = 'submitted' WHERE job_id = $1 AND status = 'in_progress' RETURNING *",
-            [jobId]
-        );
-         if (updatedJob.rows.length === 0) {
-            await client.query('ROLLBACK');
-            return res.status(400).json({ msg: 'Job is not currently in progress or not found.' });
-        }
-
-        await client.query('COMMIT');
-        res.json({ msg: 'Work submitted successfully.', job: updatedJob.rows[0] });
-
-    } catch (err) {
-        await client.query('ROLLBACK');
-        console.error(err.message);
-        res.status(500).send('Server Error');
-    } finally {
-        client.release();
-    }
-});
+router.post('/:id/submit', authMiddleware, jobController.submitWork);
 
 // @route   POST /api/jobs/:id/complete
-// @desc    Client marks job as complete (simulates payment release)
+// @desc    Client marks job as complete
 // @access  Private (Job owner only)
-router.post('/:id/complete', authMiddleware, async (req, res) => {
-    const { id: jobId } = req.params;
-    const clientId = req.user.id;
+router.post('/:id/complete', authMiddleware, jobController.completeJob);
 
-    const client = await pool.connect();
-    try {
-        await client.query('BEGIN');
+// @route   PUT /api/jobs/:id
+// @desc    Update a job posting
+// @access  Private (Job owner only)
+router.put('/:id', authMiddleware, jobController.updateJob);
 
-        // 1. Authorize: Verify client owns the job AND job status is 'submitted'
-        const updatedJob = await client.query(
-            `UPDATE jobs SET status = 'completed' 
-             WHERE job_id = $1 AND client_id = $2 AND status = 'submitted' 
-             RETURNING *`,
-            [jobId, clientId]
-        );
-
-        if (updatedJob.rows.length === 0) {
-            await client.query('ROLLBACK');
-            return res.status(403).json({ msg: 'Cannot complete job or you are not the owner. Ensure work was submitted.' });
-        }
-        
-        // --- Here you would normally trigger the actual payment release ---
-        console.log(`SIMULATING PAYMENT RELEASE for job ${jobId}`);
-
-        await client.query('COMMIT');
-        res.json({ msg: 'Job marked as complete. Payment released (simulation).', job: updatedJob.rows[0] });
-
-    } catch (err) {
-        await client.query('ROLLBACK');
-        console.error(err.message);
-        res.status(500).send('Server Error');
-    } finally {
-        client.release();
-    }
-});
+// @route   DELETE /api/jobs/:id
+// @desc    Delete a job posting
+// @access  Private (Job owner only)
+router.delete('/:id', authMiddleware, jobController.deleteJob);
 
 module.exports = router;

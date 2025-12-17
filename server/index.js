@@ -9,6 +9,10 @@ const cors = require('cors');
 const app = express();
 const httpServer = createServer(app); // 3. Create an HTTP server from our Express app
 
+const AppError = require('./src/utils/AppError'); // Import AppError
+const errorMiddleware = require('./src/middleware/errorMiddleware'); // Import Handler
+
+
 // 4. Create a Socket.IO server that sits on top of our HTTP server
 const io = new Server(httpServer, { 
     cors: {
@@ -37,7 +41,16 @@ app.use('/api/proposals', require('./src/api/routes/proposalRoutes.js'));
 app.use('/api/complaints', require('./src/api/routes/complaintRoutes.js'));
 app.use('/api/projects', require('./src/api/routes/projectRoutes.js'));
 app.use('/api/ratings', require('./src/api/routes/ratingRoutes.js'));
+app.use('/api/upload', require('./src/api/routes/uploadRoutes.js'));
+app.use('/api/notifications', require('./src/api/routes/notificationRoutes.js'));
 
+// 1. Handle Unhandled Routes (404) — FIXED
+app.use((req, res, next) => {
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+});
+
+// 2. Global Error Handler Middleware
+app.use(errorMiddleware);
 
 // --- REAL-TIME CHAT LOGIC ---
 io.on('connection', (socket) => {
@@ -52,15 +65,14 @@ io.on('connection', (socket) => {
     // This listens for a new message from a user
     socket.on('send_message', async (data) => {
         try {
-            // --- NEW: Save message to the database ---
-            const { projectId, senderId, content } = data;
+            const { projectId, senderId, content, attachmentUrl, attachmentType } = data;
+            
+            // Save to DB
             await pool.query(
-                'INSERT INTO messages (project_id, sender_id, content) VALUES ($1, $2, $3)',
-                [projectId, senderId, content]
+                'INSERT INTO messages (project_id, sender_id, content, attachment_url, attachment_type) VALUES ($1, $2, $3, $4, $5)',
+                [projectId, senderId, content, attachmentUrl || null, attachmentType || null]
             );
-            // --- END NEW ---
 
-            // Broadcast the message to everyone in the specific project room
             io.to(data.projectId).emit('receive_message', data);
         } catch (err) {
             console.error("Error saving message:", err);

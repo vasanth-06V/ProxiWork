@@ -156,3 +156,93 @@
   font-size: 1.25rem;
   cursor: pointer;
 }
+
+/* Notification Styles */
+.notifMenu {
+  position: relative;
+  margin-right: 1rem;
+}
+
+.notifButton {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  position: relative;
+  color: var(--text-primary);
+}
+
+.badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: #ef4444; /* Red */
+  color: white;
+  font-size: 0.75rem;
+  font-weight: bold;
+  padding: 0.1rem 0.4rem;
+  border-radius: 9999px;
+  border: 2px solid var(--surface-dark);
+}
+
+.notifDropdown {
+  position: absolute;
+  top: 150%;
+  right: -80px; /* Adjust alignment */
+  width: 300px;
+  background-color: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  z-index: 1001;
+  overflow: hidden;
+}
+
+.notifHeader {
+  padding: 0.75rem 1rem;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.notifList {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.notifItem {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.notifItem:hover {
+  background-color: var(--background-dark);
+}
+
+.notifItem.unread {
+  background-color: rgba(59, 130, 246, 0.1); /* Light blue tint for unread */
+  border-left: 3px solid var(--primary-blue);
+}
+
+.notifMessage {
+  margin: 0 0 0.25rem 0;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.notifDate {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.noNotif {
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}

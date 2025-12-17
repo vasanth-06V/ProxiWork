@@ -6,24 +6,27 @@ import { Link } from 'react-router-dom';
 import ConfirmationModal from '../components/ConfirmationModal';
 import EditJobModal from '../components/EditJobModal';
 import RatingModal from '../components/RatingModal';
+import PaymentModal from '../components/PaymentModal';
 
 export default function DashboardPage() {
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-
-    // --- State for Delete Modal ---
+    
+    // --- State for Modals ---
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [jobToDelete, setJobToDelete] = useState(null);
 
-    // --- State for Edit Modal ---
     const [showEditModal, setShowEditModal] = useState(false);
     const [jobToEdit, setJobToEdit] = useState(null);
-    
-    // --- State for Rating Modal ---
-    const [showRatingModal, setShowRatingModal] = useState(false); 
-    const [jobToRate, setJobToRate] = useState(null);            
 
+    const [showRatingModal, setShowRatingModal] = useState(false);
+    const [jobToRate, setJobToRate] = useState(null);
+
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [jobToPay, setJobToPay] = useState(null);
+
+    // --- Fetch Data ---
     useEffect(() => {
         fetchMyJobs();
     }, []);
@@ -40,6 +43,7 @@ export default function DashboardPage() {
         }
     };
 
+    // --- Delete Handlers ---
     const handleDeleteClick = (job) => {
         setJobToDelete(job);
         setShowDeleteModal(true);
@@ -49,40 +53,46 @@ export default function DashboardPage() {
         if (!jobToDelete) return;
         try {
             await deleteJob(jobToDelete.job_id);
-            // Refresh the job list from the server to show the change
             fetchMyJobs(); 
         } catch (err) {
-            alert('Failed to delete job. It might already be in progress.');
+            alert('Failed to delete job. It might already be in progress or you are not the owner.');
         } finally {
             setShowDeleteModal(false);
             setJobToDelete(null);
         }
     };
 
-    // --- Handlers for the Edit Modal ---
+    // --- Edit Handlers ---
     const handleEditClick = (job) => {
         setJobToEdit(job);
         setShowEditModal(true);
     };
 
     const handleJobUpdated = () => {
-        // After an update, we just need to refresh the list of jobs
         fetchMyJobs();
     };
 
-    const handleCompleteJob = async (jobId) => {
-        if (window.confirm('Are you sure you want to mark this job as complete? This will release payment (simulation) and allow you to rate the provider.')) {
-            try {
-                await completeJob(jobId);
-                alert('Job marked as complete!');
-                fetchMyJobs(); // Refresh the list to show the 'completed' status
-            } catch (err) {
-                console.error("Submit Work Error Details:", err.response || err); 
-                alert(err.response?.data?.msg || 'Failed to complete job.');
-            }
+    // --- Payment & Completion Handlers ---
+    const handleCompleteClick = (job) => {
+        setJobToPay(job);
+        setShowPaymentModal(true);
+    };
+
+    const confirmPayment = async () => {
+        if (!jobToPay) return;
+        try {
+            await completeJob(jobToPay.job_id);
+            alert('Payment released successfully! You can now rate the provider.');
+            fetchMyJobs();
+        } catch (err) {
+             alert(err.response?.data?.msg || 'Failed to complete job.');
+        } finally {
+            setShowPaymentModal(false);
+            setJobToPay(null);
         }
     };
 
+    // --- Rating Handlers ---
     const handleRateClick = (job) => {
         setJobToRate(job);
         setShowRatingModal(true);
@@ -95,17 +105,22 @@ export default function DashboardPage() {
             alert('Rating submitted successfully!');
             setShowRatingModal(false);
             setJobToRate(null);
-            // Optionally, we could update the job locally to hide the rate button,
-            // but a full refresh is simpler for now.
             fetchMyJobs(); 
         } catch (err) {
-            // Re-throw the error so the modal can display it
-            throw err; 
+            throw err; // Allow modal to handle the error display
         }
     };
 
-    // ... (keep the getStatusClass function)
-    const getStatusClass = (status) => { /* ... same as before ... */ };
+    // Helper for badge colors
+    const getStatusClass = (status) => {
+        switch(status) {
+            case 'open': return styles.statusOpen;
+            case 'in_progress': return styles.statusInProgress;
+            case 'submitted': return styles.statusSubmitted; // Requires CSS for this class
+            case 'completed': return styles.statusCompleted;
+            default: return '';
+        }
+    };
 
     if (loading) return <p className={styles.centeredMessage}>Loading your dashboard...</p>;
     if (error) return <p className={`${styles.centeredMessage} ${styles.error}`}>{error}</p>;
@@ -127,48 +142,64 @@ export default function DashboardPage() {
                                 </span>
                             </div>
                             <p className={styles.jobDescription}>{job.description.substring(0, 200)}...</p>
+                            
                             <div className={styles.jobActions}>
+                                {/* --- Logic for Action Buttons --- */}
+                                
+                                {/* 1. Approve & Complete (Only when work is submitted) */}
                                 {job.status === 'submitted' && (
                                     <button 
-                                        onClick={() => handleCompleteJob(job.job_id)} 
+                                        onClick={() => handleCompleteClick(job)} 
                                         className={`${styles.actionButton} ${styles.completeButton}`}
                                     >
                                         Approve & Complete
                                     </button>
                                 )}
-                                {/* Show a "Chat" button for in-progress jobs */}
-                                {job.status === 'in_progress' && (
-                                     <Link to={`/projects/${job.job_id}/chat`} className={styles.actionButton}>Chat with Provider</Link>
+
+                                {/* 2. Chat (Only when in progress or submitted) */}
+                                {(job.status === 'in_progress' || job.status === 'submitted') && (
+                                     <Link to={`/projects/${job.job_id}/chat`} className={styles.actionButton}>Chat</Link>
                                 )}
+
+                                {/* 3. Rate Provider (Only when completed) */}
                                 {job.status === 'completed' && (
-                                    <button onClick={() => handleRateClick(job)} className={`${styles.actionButton} ${styles.rateButton}`}>
+                                    <button 
+                                        onClick={() => handleRateClick(job)}
+                                        className={`${styles.actionButton} ${styles.rateButton}`}
+                                    >
                                         Rate Provider
                                     </button>
                                 )}
+
+                                {/* 4. View Proposals (Always visible) */}
                                 <Link to={`/jobs/${job.job_id}/proposals`} className={styles.actionButton}>View Proposals</Link>
-                                {/* --- Wire up the Edit button --- */}
+
+                                {/* 5. Edit (Only when open) */}
                                 <button 
-                                  onClick={() => handleEditClick(job)}
-                                  className={styles.actionButton} 
-                                  disabled={job.status !== 'open'}
+                                    onClick={() => handleEditClick(job)} 
+                                    className={styles.actionButton} 
+                                    disabled={job.status !== 'open'}
                                 >
-                                  Edit
+                                    Edit
                                 </button>
+
+                                {/* 6. Delete (Only when open) */}
                                 <button 
-                                  onClick={() => handleDeleteClick(job)}
-                                  className={`${styles.actionButton} ${styles.deleteButton}`} 
-                                  disabled={job.status !== 'open'}
+                                    onClick={() => handleDeleteClick(job)} 
+                                    className={`${styles.actionButton} ${styles.deleteButton}`} 
+                                    disabled={job.status !== 'open'}
                                 >
-                                  Delete
+                                    Delete
                                 </button>
                             </div>
                         </div>
                     )) : (
-                        <p>You have not posted any jobs yet.</p>
+                        <p className={styles.centeredMessage}>You have not posted any jobs yet.</p>
                     )}
                 </div>
             </div>
-            {/* Add the Confirmation Modal to the page */}
+
+            {/* --- Render All Modals --- */}
             <ConfirmationModal
                 isOpen={showDeleteModal}
                 onClose={() => setShowDeleteModal(false)}
@@ -176,12 +207,22 @@ export default function DashboardPage() {
                 title="Delete Job"
                 message={`Are you sure you want to permanently delete the job posting "${jobToDelete?.title}"? This action cannot be undone.`}
             />
+
             <EditJobModal
                 isOpen={showEditModal}
                 onClose={() => setShowEditModal(false)}
                 job={jobToEdit}
                 onJobUpdated={handleJobUpdated}
             />
+
+            <PaymentModal
+                isOpen={showPaymentModal}
+                onClose={() => setShowPaymentModal(false)}
+                onConfirm={confirmPayment}
+                jobTitle={jobToPay?.title}
+                amount={jobToPay?.budget}
+            />
+
             <RatingModal
                 isOpen={showRatingModal}
                 onClose={() => setShowRatingModal(false)}

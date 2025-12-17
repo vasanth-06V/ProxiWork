@@ -108,3 +108,20 @@ export const completeJob = (jobId) => {
 export const submitRating = (jobId, ratingData) => {
   return apiClient.post(`/ratings/job/${jobId}`, ratingData);
 };
+
+// Upload file function
+export const uploadFile = (formData) => {
+  return apiClient.post('/upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+};
+
+// Function to get notifications
+export const getNotifications = () => {
+  return apiClient.get('/notifications');
+};
+
+// Function to mark a notification as read
+export const markNotificationRead = (notificationId) => {
+  return apiClient.put(`/notifications/${notificationId}/read`);
+};
