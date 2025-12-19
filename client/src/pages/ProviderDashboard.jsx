@@ -1,6 +1,6 @@
 // client/src/pages/ProviderDashboard.jsx
 import { useState, useEffect } from 'react';
-import { getMyProposals,submitWork } from '../services/api';
+import { getMyProposals, submitWork } from '../services/api';
 import styles from './ProviderDashboard.module.css';
 import { Link } from 'react-router-dom';
 
@@ -20,15 +20,15 @@ export default function ProviderDashboard() {
     const [error, setError] = useState(null);
 
     const fetchMyProposals = async () => {
-            try {
-                const response = await getMyProposals();
-                setProposals(response.data);
-            } catch (err) {
-                setError('Failed to load your proposals.');
-            } finally {
-                setLoading(false);
-            }
-        };
+        try {
+            const response = await getMyProposals();
+            setProposals(response.data);
+        } catch (err) {
+            setError('Failed to load your proposals.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
         fetchMyProposals();
@@ -42,8 +42,6 @@ export default function ProviderDashboard() {
                 fetchMyProposals();
             } catch (err) {
                 console.error("Submit Work Error Details:", err.response || err); 
-                
-                // Keep the existing alert
                 alert(err.response?.data?.msg || 'Failed to submit work.'); 
             }
         }
@@ -60,10 +58,13 @@ export default function ProviderDashboard() {
                     <div key={proposal.proposal_id} className={styles.proposalCard}>
                         <div>
                             <h2 className={styles.jobTitle}>{proposal.job_title}</h2>
-                            <p className={styles.bid}>Your Bid: {new Intl.NumberFormat(/*...*/).format(proposal.bid_amount)}</p>
-                            <p className={styles.jobStatus}>Job Status: {proposal.job_status || 'N/A'}</p>
+                            <p className={styles.bid}>
+                                Your Bid: {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(proposal.bid_amount)}
+                            </p>
+                            <p className={styles.jobStatus}>Job Status: <span style={{ textTransform: 'capitalize' }}>{proposal.job_status?.replace('_', ' ') || 'N/A'}</span></p>
                         </div>
                         <div className={styles.actions}>
+                            {/* Submit Work: Only when accepted and work is in progress */}
                             {proposal.status === 'accepted' && proposal.job_status === 'in_progress' && (
                                 <button 
                                     onClick={() => handleSubmitWork(proposal.job_id)} 
@@ -72,9 +73,12 @@ export default function ProviderDashboard() {
                                     Submit Final Work
                                 </button>
                             )}
-                            {proposal.status === 'accepted' && (
+
+                            {/* Chat Button: Show if accepted AND NOT COMPLETED */}
+                            {proposal.status === 'accepted' && proposal.job_status !== 'completed' && (
                                 <Link to={`/projects/${proposal.job_id}/chat`} className={styles.chatButton}>Chat with Client</Link>
                             )}
+
                             <span className={`${styles.statusBadge} ${getStatusClass(proposal.status)}`}>
                                 {proposal.status}
                             </span>

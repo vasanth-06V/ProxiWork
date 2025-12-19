@@ -1,54 +1,103 @@
-// client/src/pages/PostJobPage.jsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createJob } from '../services/api';
 import styles from './PostJobPage.module.css';
 
 export default function PostJobPage() {
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [budget, setBudget] = useState('');
-    const [deadline, setDeadline] = useState('');
+    const [formData, setFormData] = useState({
+        title: '',
+        description: '',
+        budget: '',
+        deadline: ''
+    });
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError(null);
         try {
-            const jobData = { title, description, budget: Number(budget), deadline };
-            const response = await createJob(jobData);
-            // On success, navigate to the new job's detail page
-            navigate(`/jobs/${response.data.job_id}`);
+            await createJob(formData);
+            navigate('/dashboard'); // Redirect to dashboard after posting
         } catch (err) {
-            setError(err.response?.data?.msg || 'Failed to post job. Please try again.');
+            setError(err.response?.data?.message || 'Failed to post job. Please try again.');
         }
     };
 
     return (
         <div className={styles.container}>
-            <div className={styles.formWrapper}>
-                <h2 className={styles.title}>Post a New Job</h2>
+            <div className={styles.glassCard}>
+                <div className={styles.header}>
+                    <h1 className={styles.title}>Post a New Job</h1>
+                    <p className={styles.subtitle}>Find the perfect professional for your needs.</p>
+                </div>
+
+                {error && <div className={styles.errorBox}>{error}</div>}
+
                 <form onSubmit={handleSubmit} className={styles.form}>
-                    <div className={styles.inputGroup}>
-                        <label htmlFor="title" className={styles.label}>Job Title</label>
-                        <input id="title" type="text" value={title} onChange={(e) => setTitle(e.target.value)} required className={styles.input} placeholder="e.g., Build a company website" />
+                    <div className={styles.formGroup}>
+                        <label htmlFor="title">Job Title</label>
+                        <input
+                            type="text"
+                            id="title"
+                            name="title"
+                            placeholder="e.g. Need a plumber for a leaky faucet"
+                            value={formData.title}
+                            onChange={handleChange}
+                            required
+                            className={styles.input}
+                        />
                     </div>
-                    <div className={styles.inputGroup}>
-                        <label htmlFor="description" className={styles.label}>Job Description</label>
-                        <textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} required className={styles.textarea} placeholder="Describe the work to be done, required skills, and expected deliverables..."></textarea>
+
+                    <div className={styles.formRow}>
+                        <div className={styles.formGroup}>
+                            <label htmlFor="budget">Budget (₹)</label>
+                            <input
+                                type="number"
+                                id="budget"
+                                name="budget"
+                                placeholder="5000"
+                                value={formData.budget}
+                                onChange={handleChange}
+                                required
+                                className={styles.input}
+                            />
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label htmlFor="deadline">Deadline</label>
+                            <input
+                                type="date"
+                                id="deadline"
+                                name="deadline"
+                                value={formData.deadline}
+                                onChange={handleChange}
+                                className={styles.input}
+                            />
+                        </div>
                     </div>
-                    <div className={styles.inputGroup}>
-                        <label htmlFor="budget" className={styles.label}>Budget (INR)</label>
-                        <input id="budget" type="number" value={budget} onChange={(e) => setBudget(e.target.value)} required className={styles.input} placeholder="e.g., 50000" />
+
+                    <div className={styles.formGroup}>
+                        <label htmlFor="description">Description</label>
+                        <textarea
+                            id="description"
+                            name="description"
+                            placeholder="Describe your project in detail..."
+                            value={formData.description}
+                            onChange={handleChange}
+                            required
+                            rows="6"
+                            className={styles.textarea}
+                        ></textarea>
                     </div>
-                    <div className={styles.inputGroup}>
-                        <label htmlFor="deadline" className={styles.label}>Application Deadline (Optional)</label>
-                        <input id="deadline" type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} className={styles.input} />
-                    </div>
-                    <button type="submit" className={styles.button}>Post Job</button>
+
+                    <button type="submit" className={styles.submitButton}>
+                        Publish Job
+                    </button>
                 </form>
-                {error && <p className={styles.error}>{error}</p>}
             </div>
         </div>
     );

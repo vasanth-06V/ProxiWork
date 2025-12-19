@@ -1,15 +1,14 @@
-// client/src/pages/ProfilePage.jsx
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getMyProfile } from '../services/api';
-import styles from './ProfilePage.module.css';
 import { useAuth } from '../context/AuthContext';
+import styles from './ProfilePage.module.css';
 
 export default function ProfilePage() {
+    const { user } = useAuth(); // To check role
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const { user } = useAuth();
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -25,60 +24,117 @@ export default function ProfilePage() {
         fetchProfile();
     }, []);
 
-    if (loading) return <p className={styles.centeredMessage}>Loading Profile...</p>;
-    if (error) return <p className={`${styles.centeredMessage} ${styles.error}`}>{error}</p>;
-    if (!profile) return <p className={styles.centeredMessage}>Profile not found.</p>;
+    if (loading) return <div className={styles.loading}>Loading profile...</div>;
+    if (error) return <div className={styles.error}>{error}</div>;
+    if (!profile) return <div className={styles.error}>Profile not found.</div>;
 
     return (
         <div className={styles.container}>
-            <div className={styles.profileCard}>
+            <div className={styles.glassCard}>
+                
+                {/* --- Header Section --- */}
                 <div className={styles.header}>
-                    <img 
-                        src={profile.profile_image_url || `https://ui-avatars.com/api/?name=${profile.full_name.replace(' ', '+')}&background=random`} 
-                        alt={profile.full_name} 
-                        className={styles.avatar} 
-                    />
-                    <div className={styles.headerText}>
-                        <h1 className={styles.fullName}>{profile.full_name}</h1>
-                        <p className={styles.tagline}>{profile.tagline}</p>
-                        {user.role === 'provider' && (
-                             <div className={styles.rating}>
-                                <span>⭐</span> {Number(profile.rating).toFixed(2)} ({profile.total_ratings} ratings)
+                    <div className={styles.avatarWrapper}>
+                        {profile.profile_image_url ? (
+                            <img 
+                                src={profile.profile_image_url} 
+                                alt={profile.full_name} 
+                                className={styles.avatarImg} 
+                            />
+                        ) : (
+                            <div className={styles.avatarPlaceholder}>
+                                {profile.full_name?.charAt(0).toUpperCase() || 'U'}
                             </div>
                         )}
                     </div>
-                    <Link to="/profile/edit" className={styles.editButton}>Edit Profile</Link>
+                    
+                    <div className={styles.headerInfo}>
+                        <h1 className={styles.name}>{profile.full_name}</h1>
+                        <p className={styles.tagline}>{profile.tagline || 'No tagline set'}</p>
+                        <div className={styles.roleBadge}>{user?.role}</div>
+                    </div>
+
+                    <Link to="/profile/edit" className={styles.editButton}>
+                        Edit Profile
+                    </Link>
                 </div>
 
-                <div className={styles.grid}>
-                    <div className={styles.mainContent}>
-                        <div className={styles.section}>
-                            <h2 className={styles.sectionTitle}>About Me</h2>
-                            <p className={styles.bio}>{profile.bio}</p>
-                        </div>
-                        {user.role === 'provider' && profile.skills?.length > 0 && (
-                             <div className={styles.section}>
-                                <h2 className={styles.sectionTitle}>Skills</h2>
-                                <div className={styles.skillsContainer}>
-                                    {profile.skills.map(skill => (
-                                        <span key={skill} className={styles.skillTag}>{skill}</span>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+                {/* --- Stats Row --- */}
+                <div className={styles.statsRow}>
+                    <div className={styles.statItem}>
+                        <span className={styles.statValue}>
+                            {profile.rating ? Number(profile.rating).toFixed(1) : 'N/A'}
+                        </span>
+                        <span className={styles.statLabel}>Avg Rating</span>
                     </div>
-                    <aside className={styles.sidebar}>
-                        <div className={styles.section}>
-                            <h2 className={styles.sectionTitle}>Contact & Details</h2>
-                            <ul className={styles.detailsList}>
-                                <li><strong>Email:</strong> {profile.email}</li>
-                                {profile.phone_number && <li><strong>Phone:</strong> {profile.phone_number}</li>}
-                                {profile.date_of_birth && <li><strong>Born:</strong> {new Date(profile.date_of_birth).toLocaleDateString('en-IN', { dateStyle: 'long' })}</li>}
-                                {profile.linkedin_url && <li><a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer">LinkedIn</a></li>}
-                                {profile.github_url && <li><a href={profile.github_url} target="_blank" rel="noopener noreferrer">GitHub</a></li>}
-                            </ul>
+                    <div className={styles.statItem}>
+                        <span className={styles.statValue}>{profile.total_ratings || 0}</span>
+                        <span className={styles.statLabel}>Reviews</span>
+                    </div>
+                    <div className={styles.statItem}>
+                        <span className={styles.statValue}>
+                            {new Date(profile.created_at || Date.now()).getFullYear()}
+                        </span>
+                        <span className={styles.statLabel}>Member Since</span>
+                    </div>
+                </div>
+
+                {/* --- Main Content Grid --- */}
+                <div className={styles.contentGrid}>
+                    
+                    {/* About Section */}
+                    <div className={styles.section}>
+                        <h2 className={styles.sectionTitle}>About Me</h2>
+                        <p className={styles.bio}>
+                            {profile.bio || 'This user hasn\'t written a bio yet.'}
+                        </p>
+                    </div>
+
+                    {/* Contact Info */}
+                    <div className={styles.section}>
+                        <h2 className={styles.sectionTitle}>Contact & Socials</h2>
+                        <ul className={styles.contactList}>
+                            <li>
+                                <span className={styles.icon}>📧</span> 
+                                {profile.email}
+                            </li>
+                            {profile.phone_number && (
+                                <li>
+                                    <span className={styles.icon}>📱</span> 
+                                    {profile.phone_number}
+                                </li>
+                            )}
+                            {profile.linkedin_url && (
+                                <li>
+                                    <span className={styles.icon}>💼</span> 
+                                    <a href={profile.linkedin_url} target="_blank" rel="noreferrer">LinkedIn Profile</a>
+                                </li>
+                            )}
+                            {profile.github_url && (
+                                <li>
+                                    <span className={styles.icon}>💻</span> 
+                                    <a href={profile.github_url} target="_blank" rel="noreferrer">GitHub Profile</a>
+                                </li>
+                            )}
+                        </ul>
+                    </div>
+
+                    {/* Skills Section (Full Width) */}
+                    <div className={`${styles.section} ${styles.fullWidth}`}>
+                        <h2 className={styles.sectionTitle}>Skills</h2>
+                        <div className={styles.skillsContainer}>
+                            {profile.skills && profile.skills.length > 0 ? (
+                                profile.skills.map((skill, index) => (
+                                    <span key={index} className={styles.skillBadge}>
+                                        {skill}
+                                    </span>
+                                ))
+                            ) : (
+                                <p className={styles.noSkills}>No skills listed.</p>
+                            )}
                         </div>
-                    </aside>
+                    </div>
+
                 </div>
             </div>
         </div>

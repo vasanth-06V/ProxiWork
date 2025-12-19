@@ -1,29 +1,99 @@
-/* client/src/index.css */
 :root {
-  /* This is our default DARK THEME */
-  --background: #121212;
-  --surface: #1E1E1E;
-  --text-primary: #EAEAEA;
-  --text-secondary: #A0A0A0;
-  --border-color: #444444;
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  /* Color Palette */
   --primary-blue: #3b82f6;
   --primary-blue-hover: #2563eb;
   --primary-green: #10b981;
-}
+  --primary-green-hover: #059669;
+  
+  --background: #0f172a; /* Deep dark blue/slate */
+  --surface: #1e293b;     /* Slightly lighter slate */
+  --surface-dark: #020617;
+  
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --border-color: #334155;
 
-/* This is our LIGHT THEME */
-[data-theme='light'] {
-  --background: #f9fafb;
-  --surface: #ffffff;
-  --text-primary: #1f2937;
-  --text-secondary: #6b7280;
-  --border-color: #e5e7eb;
+  color-scheme: dark;
+  color: var(--text-primary);
+  background-color: var(--background);
 }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: var(--background);
-  color: var(--text-primary);
-  transition: background-color 0.3s, color 0.3s;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* --- GLOBAL MOTIONAL BACKGROUND --- */
+.ambient-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1; /* Behind everything */
+  overflow: hidden;
+  pointer-events: none; /* Let clicks pass through */
+  background: radial-gradient(circle at center, #1a1a2e 0%, #000000 100%);
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.5; /* Slightly lowered opacity for readability on forms */
+  animation: drift 20s infinite alternate;
+}
+
+/* Three different colored orbs moving around */
+.orb1 {
+  width: 400px;
+  height: 400px;
+  background: #3b82f6; /* Blue */
+  top: -100px;
+  left: -100px;
+}
+
+.orb2 {
+  width: 500px;
+  height: 500px;
+  background: #8b5cf6; /* Purple */
+  bottom: -100px;
+  right: -100px;
+  animation-delay: -5s;
+}
+
+.orb3 {
+  width: 300px;
+  height: 300px;
+  background: #ec4899; /* Pink */
+  top: 40%;
+  left: 40%;
+  animation-duration: 25s;
+}
+
+@keyframes drift {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(30px, 50px) scale(1.2); }
+}
+
+/* --- Global Scroll Animation Helpers --- */
+.hidden {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.visible {
+  opacity: 1;
+  transform: translateY(0);
 }

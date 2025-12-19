@@ -1,27 +1,207 @@
-/* client/src/pages/ViewProposalsPage.module.css */
 .container {
     max-width: 900px;
-    margin: 2rem auto;
-    padding: 2rem;
-}
-.title {
-    font-size: 2.25rem;
-    font-weight: bold;
-    margin-bottom: 2.5rem;
-    text-align: center;
+    margin: 4rem auto;
+    padding: 0 1rem;
     color: var(--text-primary);
 }
+
+.header {
+    margin-bottom: 3rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
+}
+
+.title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+}
+
+.subtitle strong {
+    color: var(--primary-blue);
+}
+
+/* List Container */
 .proposalList {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
 }
-.centeredMessage {
-    text-align: center;
-    font-size: 1.2rem;
-    padding: 4rem 0;
+
+/* Glass Card Style */
+.glassCard {
+    background: var(--surface);
+    background: rgba(30, 41, 59, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    padding: 2rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.glassCard:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+}
+
+/* Left Side: Info */
+.mainInfo {
+    flex: 1;
+}
+
+.providerHeader {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.avatarPlaceholder {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-blue) 0%, #2563eb 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.providerName {
+    font-size: 1.25rem;
+    margin: 0;
+    font-weight: 600;
+}
+
+.tagline {
+    margin: 0;
+    font-size: 0.9rem;
     color: var(--text-secondary);
 }
-.error {
+
+.bidInfo {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.label {
+    color: var(--text-secondary);
+    margin-right: 0.5rem;
+}
+
+.amount {
+    font-weight: 700;
+    color: var(--primary-green);
+}
+
+.coverLetterBox {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border-left: 3px solid var(--border-color);
+}
+
+.coverLetter {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #cbd5e1;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+/* Right Side: Actions */
+.actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1rem;
+    min-width: 150px;
+}
+
+.statusBadge {
+    padding: 0.3rem 0.8rem;
+    border-radius: 9999px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.pending { background-color: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+.accepted { background-color: rgba(16, 185, 129, 0.2); color: #34d399; }
+.rejected { background-color: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+.buttonGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.acceptButton, .rejectButton {
+    padding: 0.6rem 1rem;
+    border-radius: 0.5rem;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter 0.2s;
+    width: 100%;
+}
+
+.acceptButton {
+    background-color: var(--primary-green);
+    color: white;
+}
+
+.acceptButton:hover {
+    background-color: var(--primary-green-hover);
+}
+
+.rejectButton {
+    background-color: rgba(239, 68, 68, 0.1);
     color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.rejectButton:hover {
+    background-color: rgba(239, 68, 68, 0.2);
+}
+
+.loading, .error, .emptyState {
+    text-align: center;
+    margin-top: 4rem;
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .glassCard {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    
+    .actions {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+
+    .buttonGroup {
+        flex-direction: row;
+        width: auto;
+    }
 }

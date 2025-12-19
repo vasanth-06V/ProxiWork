@@ -1,47 +1,217 @@
-/* client/src/pages/JobBoardPage.module.css */
 .container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 2rem;
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    color: var(--text-primary);
 }
+
+.header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
 .title {
-  font-size: 2.5rem;
-  font-weight: bold;
-  margin-bottom: 2rem;
-  text-align: center;
-  color: var(--text-primary);
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
 }
-.jobList {
-  display: grid;
-  gap: 1.5rem;
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
 }
-.error {
-  color: #ef4444; /* A brighter red for errors */
-  text-align: center;
-}
-.filterBar {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 2.5rem;
-  background-color: var(--surface);
-  padding: 1rem;
-  border-radius: 0.5rem;
-  border: 1px solid var(--border-color);
+
+/* --- Controls Section --- */
+.controls {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    background-color: var(--surface);
+    padding: 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .searchInput {
-  flex-grow: 1; /* Takes up most of the space */
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    background-color: var(--background);
+    color: var(--text-primary);
+    font-size: 1rem;
 }
 
-.searchInput, .budgetInput {
-  padding: 0.75rem 1rem;
-  background-color: var(--background);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 0.375rem;
-  font-size: 1rem;
+.filterSelect {
+    width: 200px;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    background-color: var(--background);
+    color: var(--text-primary);
+    font-size: 1rem;
+    cursor: pointer;
 }
 
-.budgetInput {
-  width: 200px;
+/* --- Job List (Rectangle Bars) --- */
+.jobList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.jobCard {
+    background-color: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.jobCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    border-color: var(--primary-blue);
+}
+
+.jobMain {
+    flex: 1;
+    margin-right: 2rem;
+}
+
+.jobTitle {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    color: var(--primary-blue); /* Highlight title color */
+}
+
+.jobMeta {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.separator {
+    color: var(--border-color);
+}
+
+.jobSnippet {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.jobSidebar {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+    min-width: 150px;
+}
+
+.budgetBox {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.deadline {
+    font-size: 0.85rem;
+    color: #ef4444; /* Reddish for deadline urgency */
+    background-color: rgba(239, 68, 68, 0.1);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.viewButton {
+    background-color: var(--primary-blue);
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: 0.375rem;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-align: center;
+    width: 100%;
+    transition: background-color 0.2s;
+}
+
+.viewButton:hover {
+    background-color: var(--primary-blue-hover);
+}
+
+/* --- Empty State --- */
+.noResults {
+    text-align: center;
+    padding: 3rem;
+    background-color: var(--surface);
+    border-radius: 0.75rem;
+    border: 1px dashed var(--border-color);
+    color: var(--text-secondary);
+}
+
+.clearButton {
+    background: none;
+    border: 1px solid var(--primary-blue);
+    color: var(--primary-blue);
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    margin-top: 1rem;
+    cursor: pointer;
+}
+
+.clearButton:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+}
+
+.loading {
+    text-align: center;
+    font-size: 1.2rem;
+    margin-top: 3rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .controls {
+        flex-direction: column;
+    }
+    
+    .filterSelect {
+        width: 100%;
+    }
+
+    .jobCard {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .jobMain {
+        margin-right: 0;
+        margin-bottom: 1rem;
+    }
+
+    .jobSidebar {
+        width: 100%;
+        align-items: flex-start;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid var(--border-color);
+        padding-top: 1rem;
+    }
+    
+    .viewButton {
+        width: auto;
+    }
 }

@@ -1,58 +1,91 @@
-// client/src/pages/HomePage.jsx
-import styles from './HomePage.module.css';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-
-const categories = [
-  { name: 'Development & IT', icon: '💻' },
-  { name: 'Design & Creative', icon: '🎨' },
-  { name: 'Sales & Marketing', icon: '📈' },
-  { name: 'Writing & Translation', icon: '✍️' },
-  { name: 'Admin & Support', icon: '👤' },
-  { name: 'Finance & Accounting', icon: '💰' },
-];
+import useScrollReveal from '../hooks/useScrollReveal'; 
+import styles from './HomePage.module.css';
 
 export default function HomePage() {
   const { user } = useAuth();
+  
+  // Activate scroll animations
+  useScrollReveal();
 
   return (
-    <div>
-      {/* Conditional "Complete Profile" Banner */}
-      {user && !user.hasProfile && (
-        <div className={styles.banner}>
-          <p>Welcome! Complete your profile to start using ProxiWork.</p>
-          <Link to="/create-profile" className={styles.bannerButton}>Complete Profile</Link>
-        </div>
-      )}
+    <div className={styles.wrapper}>
+      {/* REMOVED LOCAL BACKGROUND DIVS */}
 
-      {/* Hero Section */}
-      <header className={styles.hero}>
+      {/* --- HERO SECTION --- */}
+      <section className={styles.hero}>
         <div className={styles.heroContent}>
-          <h1 className={styles.heroTitle}>
-            Connecting local talent with opportunity.
+          <div className={`${styles.badge} hidden`}>🚀 The #1 Hyperlocal Marketplace</div>
+          <h1 className={`${styles.heroTitle} hidden`}>
+            Master Your Local <br />
+            <span className={styles.gradientText}>Gig Economy</span>
           </h1>
-          <p className={styles.heroSubtitle}>
-            Find skilled professionals in your community or get hired for your expertise. ProxiWork is the trusted platform for local services.
+          <p className={`${styles.heroSubtitle} hidden`}>
+            Connect with top-tier professionals in your neighborhood. 
+            From quick fixes to major projects, ProxiWork makes it happen.
           </p>
-          <div className={styles.heroActions}>
-            <Link to="/jobs" className={styles.heroButtonPrimary}>Browse Jobs</Link>
-            <Link to={user && user.role === 'client' ? '/jobs/new' : '/login'} className={styles.heroButtonSecondary}>
-              Post a Job
-            </Link>
+          
+          <div className={`${styles.ctaGroup} hidden`}>
+            {!user ? (
+              <>
+                <Link to="/register" className={styles.primaryBtn}>Get Started</Link>
+                <Link to="/login" className={styles.secondaryBtn}>Sign In</Link>
+              </>
+            ) : (
+              <Link to="/jobs" className={styles.primaryBtn}>Find Work Now</Link>
+            )}
           </div>
         </div>
-      </header>
-      
-      {/* Categories Section */}
-      <section className={styles.categoriesSection}>
-        <h2 className={styles.sectionTitle}>Explore by Category</h2>
-        <div className={styles.categoriesGrid}>
-          {categories.map(category => (
-            <div key={category.name} className={styles.categoryCard}>
-              <span className={styles.categoryIcon}>{category.icon}</span>
-              <h3 className={styles.categoryName}>{category.name}</h3>
-            </div>
-          ))}
+      </section>
+
+      {/* --- STATS SECTION --- */}
+      <section className={styles.statsSection}>
+        <div className={`${styles.statCard} hidden`}>
+          <h3>5k+</h3>
+          <p>Active Jobs</p>
+        </div>
+        <div className={`${styles.statCard} hidden`}>
+          <h3>$2M+</h3>
+          <p>Paid to Providers</p>
+        </div>
+        <div className={`${styles.statCard} hidden`}>
+          <h3>4.9/5</h3>
+          <p>Average Rating</p>
+        </div>
+      </section>
+
+      {/* --- FEATURES SECTION (Glassmorphism) --- */}
+      <section className={styles.features}>
+        <h2 className={`${styles.sectionTitle} hidden`}>How It Works</h2>
+        
+        <div className={styles.grid}>
+          <div className={`${styles.glassCard} hidden`}>
+            <div className={styles.iconBox}>📝</div>
+            <h3>Post a Job</h3>
+            <p>Describe your needs, set a budget, and get ready for proposals within minutes.</p>
+          </div>
+          
+          <div className={`${styles.glassCard} hidden`}>
+            <div className={styles.iconBox}>🤝</div>
+            <h3>Hire & Chat</h3>
+            <p>Review profiles, chat in real-time, and hire the best talent for your project.</p>
+          </div>
+          
+          <div className={`${styles.glassCard} hidden`}>
+            <div className={styles.iconBox}>🛡️</div>
+            <h3>Secure Payment</h3>
+            <p>Funds are held securely until the work is completed and approved by you.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* --- CALL TO ACTION --- */}
+      <section className={styles.finalCta}>
+        <div className={`${styles.ctaBox} hidden`}>
+          <h2>Ready to get to work?</h2>
+          <p>Join thousands of users building their dreams on ProxiWork.</p>
+          <Link to="/register" className={styles.whiteBtn}>Join ProxiWork Today</Link>
         </div>
       </section>
     </div>

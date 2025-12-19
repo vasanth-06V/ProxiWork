@@ -1,20 +1,17 @@
-// client/src/components/Navbar.jsx
 import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
-import { useNotifications } from '../context/NotificationContext'; // 1. Import hook
+import { useNotifications } from '../context/NotificationContext'; 
 import styles from './Navbar.module.css';
 import useClickOutside from '../hooks/useClickOutside';
 
 export default function Navbar() {
   const { user, profile, logout } = useAuth();
-  const { theme, toggleTheme } = useTheme();
-  const { notifications, unreadCount, markAsRead } = useNotifications(); // 2. Get notification data
+  const { notifications, unreadCount, markAsRead } = useNotifications(); 
   const navigate = useNavigate();
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [notifOpen, setNotifOpen] = useState(false); // State for notification dropdown
+  const [notifOpen, setNotifOpen] = useState(false); 
   
   const dropdownRef = useRef(null);
   const notifRef = useRef(null);
@@ -27,7 +24,9 @@ export default function Navbar() {
       markAsRead(notification.notification_id);
     }
     setNotifOpen(false);
-    navigate(notification.link);
+    if (notification.link) {
+        navigate(notification.link);
+    }
   };
 
   return (
@@ -46,10 +45,10 @@ export default function Navbar() {
         </div>
 
         <div className={styles.navLinks}>
-          <button onClick={toggleTheme} className={styles.themeToggle}>{theme === 'dark' ? '☀️' : '🌙'}</button>
           
           {user ? (
             <>
+              {/* --- NOTIFICATION BELL --- */}
               <div className={styles.notifMenu} ref={notifRef}>
                 <button onClick={() => setNotifOpen(!notifOpen)} className={styles.notifButton}>
                   🔔
@@ -79,6 +78,7 @@ export default function Navbar() {
                   </div>
                 )}
               </div>
+              {/* --- END NOTIFICATION BELL --- */}
 
               <div className={styles.profileMenu} ref={dropdownRef}>
                 <button onClick={() => setDropdownOpen(!dropdownOpen)} className={styles.profileButton}>

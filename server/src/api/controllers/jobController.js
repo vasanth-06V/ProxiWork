@@ -29,8 +29,14 @@ exports.getMyJobs = catchAsync(async (req, res, next) => {
         return next(new AppError('Forbidden: Access denied', 403));
     }
 
+    // UPDATED QUERY: Joins with ratings table to check if 'is_rated' is true
     const myJobs = await pool.query(
-        "SELECT * FROM jobs WHERE client_id = $1 ORDER BY created_at DESC",
+        `SELECT j.*, 
+         CASE WHEN r.rating_id IS NOT NULL THEN true ELSE false END as is_rated
+         FROM jobs j
+         LEFT JOIN ratings r ON j.job_id = r.job_id
+         WHERE j.client_id = $1 
+         ORDER BY j.created_at DESC`,
         [req.user.id]
     );
     res.json(myJobs.rows);

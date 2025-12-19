@@ -1,4 +1,3 @@
-// client/src/router/index.jsx
 import { Routes, Route } from 'react-router-dom';
 import HomePage from '../pages/HomePage';
 import RegisterPage from '../pages/RegisterPage';
@@ -14,16 +13,19 @@ import ProviderDashboard from '../pages/ProviderDashboard';
 import ProfilePage from '../pages/ProfilePage';
 import ComplaintPage from '../pages/ComplaintPage';
 import ChatPage from '../pages/ChatPage';
+import MessagesPage from '../pages/MessagesPage'; // Imported MessagesPage
 
 export default function AppRouter() {
   return (
     <Routes>
+      {/* --- Public Routes --- */}
       <Route path="/" element={<HomePage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/jobs" element={<JobBoardPage />} /> 
       <Route path="/jobs/:jobId" element={<JobDetailPage />} />
 
+      {/* --- Protected Routes --- */}
       <Route element={<ProtectedRoute />}>
         <Route path="/create-profile" element={<EditProfilePage />} />
         <Route path="/profile/edit" element={<EditProfilePage />} />
@@ -34,6 +36,9 @@ export default function AppRouter() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/complaint" element={<ComplaintPage />} />
         <Route path="/projects/:projectId/chat" element={<ChatPage />} />
+        
+        {/* The new Messages route */}
+        <Route path="/messages" element={<MessagesPage />} />
       </Route>
     </Routes>
   );

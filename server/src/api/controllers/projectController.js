@@ -1,8 +1,8 @@
-// server/src/api/controllers/projectController.js
 const pool = require('../../config/db');
 const catchAsync = require('../../utils/catchAsync');
 const AppError = require('../../utils/AppError');
 
+// 1. Get messages for a specific chat room
 exports.getProjectMessages = catchAsync(async (req, res, next) => {
     const { projectId } = req.params;
     const userId = req.user.id;
@@ -33,4 +33,26 @@ exports.getProjectMessages = catchAsync(async (req, res, next) => {
     );
 
     res.json(messages.rows);
+});
+
+// 2. Get list of all active projects (conversations) for the user
+exports.getUserProjects = catchAsync(async (req, res, next) => {
+    const userId = req.user.id;
+
+    // Added DISTINCT ON (j.job_id) to prevent duplicates
+    const projects = await pool.query(
+        `SELECT DISTINCT ON (j.job_id) 
+                j.job_id, j.title, j.status, j.created_at,
+                c.full_name AS client_name, c.user_id AS client_id,
+                p.full_name AS provider_name, p.user_id AS provider_id
+         FROM jobs j
+         JOIN proposals prop ON j.job_id = prop.job_id AND prop.status = 'accepted'
+         JOIN profiles c ON j.client_id = c.user_id
+         JOIN profiles p ON prop.provider_id = p.user_id
+         WHERE j.client_id = $1 OR prop.provider_id = $1
+         ORDER BY j.job_id, j.created_at DESC`, 
+        [userId]
+    );
+
+    res.json(projects.rows);
 });

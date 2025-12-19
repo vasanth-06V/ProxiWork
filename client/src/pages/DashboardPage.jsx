@@ -105,9 +105,9 @@ export default function DashboardPage() {
             alert('Rating submitted successfully!');
             setShowRatingModal(false);
             setJobToRate(null);
-            fetchMyJobs(); 
+            fetchMyJobs(); // This will re-fetch jobs, and is_rated should now be true from backend
         } catch (err) {
-            throw err; // Allow modal to handle the error display
+            throw err; 
         }
     };
 
@@ -116,7 +116,7 @@ export default function DashboardPage() {
         switch(status) {
             case 'open': return styles.statusOpen;
             case 'in_progress': return styles.statusInProgress;
-            case 'submitted': return styles.statusSubmitted; // Requires CSS for this class
+            case 'submitted': return styles.statusSubmitted; 
             case 'completed': return styles.statusCompleted;
             default: return '';
         }
@@ -135,17 +135,17 @@ export default function DashboardPage() {
                 <div className={styles.jobList}>
                     {jobs.length > 0 ? jobs.map(job => (
                         <div key={job.job_id} className={styles.jobCard}>
-                            <div className={styles.jobHeader}>
+                            <div className={styles.jobInfo}>
                                 <h2 className={styles.jobTitle}>{job.title}</h2>
-                                <span className={`${styles.statusBadge} ${getStatusClass(job.status)}`}>
-                                    {job.status.replace('_', ' ')}
-                                </span>
+                                <div className={styles.jobMeta}>
+                                    <span>Budget: ₹{job.budget}</span>
+                                    <span className={`${styles.statusBadge} ${getStatusClass(job.status)}`}>
+                                        {job.status.replace('_', ' ')}
+                                    </span>
+                                </div>
                             </div>
-                            <p className={styles.jobDescription}>{job.description.substring(0, 200)}...</p>
                             
                             <div className={styles.jobActions}>
-                                {/* --- Logic for Action Buttons --- */}
-                                
                                 {/* 1. Approve & Complete (Only when work is submitted) */}
                                 {job.status === 'submitted' && (
                                     <button 
@@ -158,7 +158,7 @@ export default function DashboardPage() {
 
                                 {/* 2. Chat (Only when in progress or submitted) */}
                                 {(job.status === 'in_progress' || job.status === 'submitted') && (
-                                     <Link to={`/projects/${job.job_id}/chat`} className={styles.actionButton}>Chat</Link>
+                                     <Link to={`/projects/${job.job_id}/chat`} className={`${styles.actionButton} ${styles.chatButton}`}>Chat</Link>
                                 )}
 
                                 {/* 3. Rate Provider (Only when completed) */}
@@ -166,31 +166,36 @@ export default function DashboardPage() {
                                     <button 
                                         onClick={() => handleRateClick(job)}
                                         className={`${styles.actionButton} ${styles.rateButton}`}
+                                        disabled={job.is_rated} // LOGIC: Disable if already rated
                                     >
-                                        Rate Provider
+                                        {job.is_rated ? 'Rated' : 'Rate Provider'}
                                     </button>
                                 )}
 
-                                {/* 4. View Proposals (Always visible) */}
-                                <Link to={`/jobs/${job.job_id}/proposals`} className={styles.actionButton}>View Proposals</Link>
+                                {/* 4. View Proposals (ONLY VISIBLE IF OPEN) */}
+                                {job.status === 'open' && (
+                                    <Link to={`/jobs/${job.job_id}/proposals`} className={`${styles.actionButton} ${styles.viewButton}`}>View Proposals</Link>
+                                )}
 
                                 {/* 5. Edit (Only when open) */}
-                                <button 
-                                    onClick={() => handleEditClick(job)} 
-                                    className={styles.actionButton} 
-                                    disabled={job.status !== 'open'}
-                                >
-                                    Edit
-                                </button>
+                                {job.status === 'open' && (
+                                    <button 
+                                        onClick={() => handleEditClick(job)} 
+                                        className={`${styles.actionButton} ${styles.editButton}`}
+                                    >
+                                        Edit
+                                    </button>
+                                )}
 
                                 {/* 6. Delete (Only when open) */}
-                                <button 
-                                    onClick={() => handleDeleteClick(job)} 
-                                    className={`${styles.actionButton} ${styles.deleteButton}`} 
-                                    disabled={job.status !== 'open'}
-                                >
-                                    Delete
-                                </button>
+                                {job.status === 'open' && (
+                                    <button 
+                                        onClick={() => handleDeleteClick(job)} 
+                                        className={`${styles.actionButton} ${styles.deleteButton}`}
+                                    >
+                                        Delete
+                                    </button>
+                                )}
                             </div>
                         </div>
                     )) : (
@@ -199,7 +204,7 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            {/* --- Render All Modals --- */}
+            {/* --- Modals --- */}
             <ConfirmationModal
                 isOpen={showDeleteModal}
                 onClose={() => setShowDeleteModal(false)}

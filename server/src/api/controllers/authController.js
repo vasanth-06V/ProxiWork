@@ -8,13 +8,6 @@ const AppError = require('../../utils/AppError');
 exports.register = catchAsync(async (req, res, next) => {
     const { email, password, role } = req.body;
 
-    if (!email || !password || !role) {
-        return next(new AppError('Please provide email, password, and role', 400));
-    }
-    if (role !== 'client' && role !== 'provider') {
-        return next(new AppError('Invalid role. Must be "client" or "provider"', 400));
-    }
-
     const userExists = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
     if (userExists.rows.length > 0) {
         return next(new AppError('An account with this email already exists', 400));

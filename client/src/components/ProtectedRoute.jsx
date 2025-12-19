@@ -2,19 +2,21 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-export default function ProtectedRoute() {
-  const { user, loading } = useAuth(); // <-- 1. GET THE LOADING STATE
+const ProtectedRoute = () => {
+    const { user, loading } = useAuth();
 
-  // 2. If we are still loading, show a simple loading message
-  if (loading) {
-    return <div>Loading...</div>; 
-  }
+    if (loading) {
+        // You can replace this with a nice Spinner component if you have one
+        return <div style={{ textAlign: 'center', marginTop: '50px' }}>Loading...</div>;
+    }
 
-  // 3. If loading is finished AND there's a user, show the page
-  if (user) {
+    // If user is not logged in, redirect to Login page
+    if (!user) {
+        return <Navigate to="/login" replace />;
+    }
+
+    // If user IS logged in, render the child route (Outlet)
     return <Outlet />;
-  }
+};
 
-  // 4. If loading is finished AND there's no user, redirect to login
-  return <Navigate to="/login" replace />; 
-}
+export default ProtectedRoute;
