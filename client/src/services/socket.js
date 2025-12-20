@@ -1,14 +1,28 @@
 // client/src/services/socket.js
-import { io } from 'socket.io-client';
+import io from 'socket.io-client';
 
-const URL = 'http://localhost:5000';
-export const socket = io(URL, { autoConnect: false }); // <-- 1. Don't connect automatically
+// 1. Determine the URL
+// If VITE_SOCKET_URL is set (in Vercel), use it. Otherwise, default to localhost.
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
 
-// 2. We now export functions to control the connection
+console.log('🔌 Connecting Socket to:', SOCKET_URL); // Debug log to see what's happening
+
+// 2. Initialize Socket
+export const socket = io(SOCKET_URL, {
+    autoConnect: false, // Wait for manual connection
+    withCredentials: true,
+    transports: ['websocket', 'polling'] // Try WebSocket first, fall back to polling
+});
+
+// 3. Helper Functions
 export const connectSocket = () => {
-  socket.connect();
+    if (!socket.connected) {
+        socket.connect();
+    }
 };
 
 export const disconnectSocket = () => {
-  socket.disconnect();
+    if (socket.connected) {
+        socket.disconnect();
+    }
 };
