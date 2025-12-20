@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 // Import the shared styles
-import styles from '../components/AuthForms.module.css';
+import styles from './AuthForm.module.css';
 
 export default function LoginPage() {
     const { login } = useAuth();
