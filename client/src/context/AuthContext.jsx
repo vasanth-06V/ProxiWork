@@ -1,81 +1,73 @@
-// client/src/context/AuthContext.jsx
 import { createContext, useState, useEffect, useContext } from 'react';
-import axios from 'axios';
-import { jwtDecode } from 'jwt-decode';
-import { getMyProfile } from '../services/api'; // 1. Import getMyProfile
+import { loginUser } from '../services/api';
 
-const AuthContext = createContext(null);
+const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null); // From the token (for auth rules)
-  const [profile, setProfile] = useState(null); // Full profile data (for display)
-  const [token, setToken] = useState(localStorage.getItem('token'));
-  const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState(null);
+    const [profile, setProfile] = useState(null); // Optional: if you fetch full profile on load
+    const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const initializeAuth = async () => {
-      const storedToken = localStorage.getItem('token');
-      if (storedToken) {
+    // Helper: Decode JWT manually (avoiding extra npm dependencies)
+    const parseJwt = (token) => {
         try {
-          axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
-          const decoded = jwtDecode(storedToken);
-          setUser(decoded.user);
-
-          // If the token says we have a profile, fetch its details for the UI
-          if (decoded.user.hasProfile) {
-            const profileResponse = await getMyProfile();
-            setProfile(profileResponse.data);
-          }
-
-        } catch (error) {
-          // This will catch invalid/expired tokens
-          console.error("Auth initialization error:", error);
-          localStorage.removeItem('token');
-          setUser(null);
-          setProfile(null);
+            return JSON.parse(atob(token.split('.')[1]));
+        } catch (e) {
+            return null;
         }
-      }
-      setLoading(false);
     };
 
-    initializeAuth();
-  }, [token]);
+    useEffect(() => {
+        // Check for token on app start
+        const token = localStorage.getItem('token');
+        if (token) {
+            const decoded = parseJwt(token);
+            // Check if token is expired
+            if (decoded && decoded.exp * 1000 > Date.now()) {
+                setUser(decoded.user);
+            } else {
+                localStorage.removeItem('token');
+                setUser(null);
+            }
+        }
+        setLoading(false);
+    }, []);
 
-  const login = async (email, password) => {
-    const response = await axios.post('http://localhost:5000/api/auth/login', { email, password });
-    localStorage.setItem('token', response.data.token);
-    setToken(response.data.token); // This triggers the useEffect to run again
-  };
+    const login = async (email, password) => {
+        const response = await loginUser({ email, password });
+        const { token } = response.data;
+        
+        // 1. Save Token
+        localStorage.setItem('token', token);
+        
+        // 2. Decode & Set User
+        const decoded = parseJwt(token);
+        setUser(decoded.user);
+        
+        return response;
+    };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    setToken(null);
-    setUser(null);
-    setProfile(null); // Clear profile on logout
-  };
-  
-  const updateToken = (newToken) => {
-    localStorage.setItem('token', newToken);
-    setToken(newToken); // This triggers the useEffect to run again
-  };
+    const logout = () => {
+        localStorage.removeItem('token');
+        setUser(null);
+        setProfile(null);
+        // Optional: Redirect to login handled by ProtectedRoute or component logic
+    };
 
-  const authContextValue = {
-    user,
-    profile, // 2. Expose the profile data
-    token,
-    loading,
-    login,
-    logout,
-    updateToken,
-  };
+    // Called after "Create Profile" to update the 'hasProfile' flag in the token
+    const updateToken = (newToken) => {
+        localStorage.setItem('token', newToken);
+        const decoded = parseJwt(newToken);
+        setUser(decoded.user);
+    };
 
-  return (
-    <AuthContext.Provider value={authContextValue}>
-      {!loading && children} {/* Only render children when auth check is complete */}
-    </AuthContext.Provider>
-  );
+    return (
+        <AuthContext.Provider value={{ user, profile, login, logout, updateToken, loading }}>
+            {!loading && children}
+        </AuthContext.Provider>
+    );
 }
 
 export function useAuth() {
-  return useContext(AuthContext);
+    return useContext(AuthContext);
 }

@@ -1,46 +1,87 @@
-// client/src/pages/LoginPage.jsx
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; // 1. Import our custom useAuth hook
-import styles from './AuthForm.module.css';
+import { useAuth } from '../context/AuthContext';
+// Import the shared styles
+import styles from '../components/AuthForms.module.css';
 
 export default function LoginPage() {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState(null);
+    const { login } = useAuth();
+    const navigate = useNavigate();
+    
+    const [formData, setFormData] = useState({
+        email: '',
+        password: ''
+    });
+    
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    const { login } = useAuth(); // 2. Get the login function from the context
-    const navigate = useNavigate(); // 3. Get the navigate function for redirection
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError(null);
+        setLoading(true);
+        setError('');
+
         try {
-            await login(email, password); // 4. Call the context's login function
-            navigate('/'); // 5. On success, redirect the user to the home page
+            await login(formData.email, formData.password);
+            // Redirect based on role logic could go here, or just dashboard
+            navigate('/dashboard'); 
         } catch (err) {
-            setError(err.response?.data?.msg || 'Login failed.');
+            setError(err.response?.data?.message || 'Invalid email or password.');
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
         <div className={styles.container}>
-            <div className={styles.formWrapper}>
-                <h2 className={styles.title}>Sign In</h2>
+            <div className={styles.glassCard}>
+                <div className={styles.header}>
+                    <h1 className={styles.title}>Welcome Back</h1>
+                    <p className={styles.subtitle}>Sign in to continue to ProxiWork</p>
+                </div>
+
+                {error && <div className={styles.errorBox}>{error}</div>}
+
                 <form onSubmit={handleSubmit} className={styles.form}>
-                    <div className={styles.inputGroup}>
-                        <label htmlFor="email" className={styles.label}>Email</label>
-                        <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className={styles.input} />
+                    <div className={styles.formGroup}>
+                        <label htmlFor="email">Email Address</label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            required
+                            className={styles.input}
+                            placeholder="you@example.com"
+                        />
                     </div>
-                    <div className={styles.inputGroup}>
-                        <label htmlFor="password" className={styles.label}>Password</label>
-                        <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className={styles.input} />
+
+                    <div className={styles.formGroup}>
+                        <label htmlFor="password">Password</label>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            required
+                            className={styles.input}
+                            placeholder="••••••••"
+                        />
                     </div>
-                    <button type="submit" className={styles.button}>Login</button>
+
+                    <button type="submit" className={styles.submitButton} disabled={loading}>
+                        {loading ? 'Signing In...' : 'Sign In'}
+                    </button>
                 </form>
-                {error && <p className={`${styles.message} ${styles.error}`}>{error}</p>}
-                <p className={styles.redirect}>
-                    Don't have an account? <Link to="/register" className={styles.redirectLink}>Register</Link>
+
+                <p className={styles.footerText}>
+                    Don't have an account? <Link to="/register" className={styles.link}>Sign Up</Link>
                 </p>
             </div>
         </div>
