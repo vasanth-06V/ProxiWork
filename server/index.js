@@ -6,33 +6,28 @@ const { Server } = require('socket.io');
 require('dotenv').config();
 
 // Imports
-const pool = require('./src/config/db'); 
+const pool = require('./src/config/db');
 const AppError = require('./src/utils/AppError');
 const errorMiddleware = require('./src/middleware/errorMiddleware');
-const socketHandler = require('./src/socket/socketHandler'); 
+const socketHandler = require('./src/socket/socketHandler');
 
-// --- 1. CONFIGURATION: Trusted Frontend URLs ---
-// Add your Vercel URL here! (No trailing slash)
+// --- TRUSTED FRONTEND ORIGINS ---
 const allowedOrigins = [
-    "http://localhost:5173", 
-    "https://proxi-work.vercel.app/", // <--- REPLACE THIS WITH YOUR VERCEL URL
-    "https://proxiwork.vercel.app" // Add any variations if unsure
+  "http://localhost:5173",
+  "https://proxi-work.vercel.app"
 ];
 
-// --- 2. MIDDLEWARE (CORS FIX) ---
+// --- GLOBAL MIDDLEWARE (MUST BE FIRST) ---
 app.use(cors({
-    origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl requests)
-        if (!origin) return callback(null, true);
-        if (allowedOrigins.indexOf(origin) === -1) {
-            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-            return callback(new Error(msg), false);
-        }
-        return callback(null, true);
-    },
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true
+  origin: allowedOrigins,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
 }));
+
+// ✅ REQUIRED for preflight requests
+app.options("*", cors());
+
 app.use(express.json());
 
 // --- ROUTES ---
