@@ -11,9 +11,6 @@ const AppError = require('./src/utils/AppError');
 const errorMiddleware = require('./src/middleware/errorMiddleware');
 const socketHandler = require('./src/socket/socketHandler'); 
 
-// --- 1. MIDDLEWARE (CORS FIX - PERMISSIVE MODE) ---
-// origin: true tells the server to reflect the request origin. 
-// It effectively allows any domain to connect while still supporting credentials/cookies.
 app.use(cors({
     origin: true, 
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -34,23 +31,27 @@ app.use('/api/upload', require('./src/api/routes/uploadRoutes'));
 app.use('/api/notifications', require('./src/api/routes/notificationRoutes'));
 
 // --- ERROR HANDLING ---
+// 1. Handle Unhandled Routes (404)
 app.use((req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
+
+// 2. Global Error Handler Middleware
 app.use(errorMiddleware);
 
 // --- SERVER & SOCKET SETUP ---
 const server = http.createServer(app);
 
-// --- 3. SOCKET CORS FIX ---
+// --- 3. SOCKET CORS FIX (PERMISSIVE MODE) ---
 const io = new Server(server, {
     cors: {
-        origin: allowedOrigins, // Use the same allowed list
+        origin: "*", // Allow socket connection from anywhere
         methods: ["GET", "POST"],
         credentials: true
     }
 });
 
+// Initialize Socket Logic
 socketHandler(io);
 
 const PORT = process.env.PORT || 5000;
