@@ -15,7 +15,7 @@ const socketHandler = require('./src/socket/socketHandler');
 // Add your Vercel URL here! (No trailing slash)
 const allowedOrigins = [
     "http://localhost:5173", 
-    "https://proxiwork-platform.vercel.app", // <--- REPLACE THIS WITH YOUR VERCEL URL
+    "https://proxi-work.vercel.app/", // <--- REPLACE THIS WITH YOUR VERCEL URL
     "https://proxiwork.vercel.app" // Add any variations if unsure
 ];
 
