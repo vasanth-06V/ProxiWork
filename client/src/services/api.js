@@ -104,4 +104,9 @@ export const getNotifications = () =>
 export const markNotificationRead = (notificationId) =>
     apiClient.put(`/notifications/${notificationId}/read`);
 
+// Submit a complaint
+export const createComplaint = (complaintData) => {
+    return apiClient.post('/complaints', complaintData);
+};
+
 export default apiClient;

@@ -18,12 +18,12 @@ export default function HomePage() {
         <div className={styles.heroContent}>
           <div className={`${styles.badge} hidden`}>🚀 The #1 Hyperlocal Marketplace</div>
           <h1 className={`${styles.heroTitle} hidden`}>
-            Master Your Local <br />
-            <span className={styles.gradientText}>Gig Economy</span>
+            Master Your Talent <br />
+            <span className={styles.gradientText}>Power the Local Gig Economy</span>
           </h1>
           <p className={`${styles.heroSubtitle} hidden`}>
             Connect with top-tier professionals in your neighborhood. 
-            From quick fixes to major projects, ProxiWork makes it happen.
+            From quick fixes to major works, ProxiWork makes it happen.
           </p>
           
           <div className={`${styles.ctaGroup} hidden`}>
