@@ -6,28 +6,19 @@ const { Server } = require('socket.io');
 require('dotenv').config();
 
 // Imports
-const pool = require('./src/config/db');
+const pool = require('./src/config/db'); 
 const AppError = require('./src/utils/AppError');
 const errorMiddleware = require('./src/middleware/errorMiddleware');
-const socketHandler = require('./src/socket/socketHandler');
+const socketHandler = require('./src/socket/socketHandler'); 
 
-// --- TRUSTED FRONTEND ORIGINS ---
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://proxi-work.vercel.app"
-];
-
-// --- GLOBAL MIDDLEWARE (MUST BE FIRST) ---
+// --- 1. MIDDLEWARE (CORS FIX - PERMISSIVE MODE) ---
+// origin: true tells the server to reflect the request origin. 
+// It effectively allows any domain to connect while still supporting credentials/cookies.
 app.use(cors({
-  origin: allowedOrigins,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
+    origin: true, 
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: true
 }));
-
-// ✅ REQUIRED for preflight requests
-app.options("*", cors());
-
 app.use(express.json());
 
 // --- ROUTES ---
