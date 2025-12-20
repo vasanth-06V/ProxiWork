@@ -1,63 +1,74 @@
-// server/index.js
-require('dotenv').config();
-
 const express = require('express');
+const app = express();
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
+require('dotenv').config();
 
-const pool = require('./src/config/db');
-const socketHandler = require('./src/socket/socketHandler');
+// Imports
+const pool = require('./src/config/db'); 
 const AppError = require('./src/utils/AppError');
 const errorMiddleware = require('./src/middleware/errorMiddleware');
+const socketHandler = require('./src/socket/socketHandler'); 
 
-const app = express();
-const server = http.createServer(app);
+// --- 1. CONFIGURATION: Trusted Frontend URLs ---
+// Add your Vercel URL here! (No trailing slash)
+const allowedOrigins = [
+    "http://localhost:5173", 
+    "https://proxiwork-platform.vercel.app", // <--- REPLACE THIS WITH YOUR VERCEL URL
+    "https://proxiwork.vercel.app" // Add any variations if unsure
+];
 
-// ---- SOCKET.IO SETUP ----
-const io = new Server(server, {
-    cors: {
-        origin: "http://localhost:5173",
-        methods: ["GET", "POST"]
-    }
-});
-
-// Initialize socket events
-socketHandler(io);
-
-// ---- MIDDLEWARE ----
-app.use(cors());
+// --- 2. MIDDLEWARE (CORS FIX) ---
+app.use(cors({
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+            return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+    },
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
+}));
 app.use(express.json());
 
-// ---- DB TEST ----
-pool.query('SELECT NOW()', (err) => {
-    if (err) console.error('❌ DB connection failed:', err);
-    else console.log('✅ PostgreSQL connected');
-});
-
-// ---- ROUTES ----
-app.get('/', (req, res) => res.send('ProxiWork API running'));
-
+// --- ROUTES ---
+app.get('/', (req, res) => res.send('ProxiWork API is running...'));
 app.use('/api/auth', require('./src/api/routes/authRoutes'));
 app.use('/api/profiles', require('./src/api/routes/profileRoutes'));
 app.use('/api/jobs', require('./src/api/routes/jobRoutes'));
 app.use('/api/proposals', require('./src/api/routes/proposalRoutes'));
-app.use('/api/projects', require('./src/api/routes/projectRoutes'));
 app.use('/api/ratings', require('./src/api/routes/ratingRoutes'));
 app.use('/api/complaints', require('./src/api/routes/complaintRoutes'));
+app.use('/api/projects', require('./src/api/routes/projectRoutes'));
 app.use('/api/upload', require('./src/api/routes/uploadRoutes'));
 app.use('/api/notifications', require('./src/api/routes/notificationRoutes'));
 
-// ---- 404 HANDLER ----
+// --- ERROR HANDLING ---
 app.use((req, res, next) => {
-    next(new AppError(`Can't find ${req.originalUrl}`, 404));
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
-
-// ---- GLOBAL ERROR HANDLER ----
 app.use(errorMiddleware);
 
-// ---- START SERVER ----
+// --- SERVER & SOCKET SETUP ---
+const server = http.createServer(app);
+
+// --- 3. SOCKET CORS FIX ---
+const io = new Server(server, {
+    cors: {
+        origin: allowedOrigins, // Use the same allowed list
+        methods: ["GET", "POST"],
+        credentials: true
+    }
+});
+
+socketHandler(io);
+
 const PORT = process.env.PORT || 5000;
+
 server.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`Server is running on http://localhost:${PORT}`);
 });
