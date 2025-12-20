@@ -1,10 +1,11 @@
 import axios from 'axios';
 
 // 1. Determine the API URL
-// Priority: Vercel Env Var -> Localhost fallback
+// If running on Vercel, this uses the Environment Variable.
+// If running locally, it falls back to localhost.
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-console.log('📡 Connecting API to:', API_URL); 
+console.log('📡 Connecting API to:', API_URL); // Check your console to see which one it picks!
 
 const apiClient = axios.create({
     baseURL: API_URL,
@@ -13,7 +14,7 @@ const apiClient = axios.create({
     },
 });
 
-// Add a request interceptor to include the JWT token in every request
+// ---- REQUEST INTERCEPTOR (JWT) ----
 apiClient.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token');
@@ -25,54 +26,92 @@ apiClient.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
-// --- API Functions ---
+// ---------- AUTH ----------
+export const registerUser = (userData) =>
+    apiClient.post('/auth/register', userData);
 
-// Auth
-export const registerUser = (userData) => apiClient.post('/auth/register', userData);
-export const loginUser = (userData) => apiClient.post('/auth/login', userData);
+export const loginUser = (userData) =>
+    apiClient.post('/auth/login', userData);
 
-// Profiles
-export const getMyProfile = () => apiClient.get('/profiles/me');
-export const createOrUpdateProfile = (profileData) => apiClient.post('/profiles', profileData);
+// ---------- PROFILES ----------
+export const getMyProfile = () =>
+    apiClient.get('/profiles/me');
 
-// Jobs
-export const getJobs = () => apiClient.get('/jobs');
-export const getJobById = (id) => apiClient.get(`/jobs/${id}`);
-export const createJob = (jobData) => apiClient.post('/jobs', jobData);
-export const getMyJobs = () => apiClient.get('/jobs/my-jobs');
-export const updateJob = (id, jobData) => apiClient.put(`/jobs/${id}`, jobData);
-export const deleteJob = (id) => apiClient.delete(`/jobs/${id}`);
+export const createOrUpdateProfile = (profileData) =>
+    apiClient.post('/profiles', profileData);
 
-// Proposals
-export const getProposalsForJob = (jobId) => apiClient.get(`/jobs/${jobId}/proposals`);
-export const submitProposal = (jobId, proposalData) => apiClient.post(`/jobs/${jobId}/propose`, proposalData);
-export const acceptProposal = (proposalId) => apiClient.post(`/proposals/${proposalId}/accept`);
-export const rejectProposal = (proposalId) => apiClient.post(`/proposals/${proposalId}/reject`);
-export const getMyProposals = () => apiClient.get('/proposals/my-proposals');
+// ---------- JOBS ----------
+export const getJobs = () =>
+    apiClient.get('/jobs');
 
-// Work & Completion
-export const submitWork = (jobId) => apiClient.post(`/jobs/${jobId}/submit`);
-export const completeJob = (jobId) => apiClient.post(`/jobs/${jobId}/complete`);
+export const getJobById = (jobId) =>
+    apiClient.get(`/jobs/${jobId}`);
 
-// Ratings
-export const submitRating = (jobId, ratingData) => apiClient.post(`/ratings/job/${jobId}`, ratingData);
+export const createJob = (jobData) =>
+    apiClient.post('/jobs', jobData);
 
-// Chat & Messages
-export const getMessagesForProject = (projectId) => apiClient.get(`/projects/${projectId}/messages`);
-export const getUserProjects = () => apiClient.get('/projects'); // For Messages Page
+export const getMyJobs = () =>
+    apiClient.get('/jobs/my-jobs');
 
-// Complaints
-export const createComplaint = (complaintData) => apiClient.post('/complaints', complaintData);
+export const updateJob = (jobId, jobData) =>
+    apiClient.put(`/jobs/${jobId}`, jobData);
 
-// File Upload
-export const uploadFile = (formData) => {
-    return apiClient.post('/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+export const deleteJob = (jobId) =>
+    apiClient.delete(`/jobs/${jobId}`);
+
+// ---------- PROPOSALS ----------
+export const submitProposal = (jobId, proposalData) =>
+    apiClient.post(`/jobs/${jobId}/propose`, proposalData);
+
+export const getProposalsForJob = (jobId) =>
+    apiClient.get(`/jobs/${jobId}/proposals`);
+
+export const acceptProposal = (proposalId) =>
+    apiClient.post(`/proposals/${proposalId}/accept`);
+
+export const rejectProposal = (proposalId) =>
+    apiClient.post(`/proposals/${proposalId}/reject`);
+
+export const getMyProposals = () =>
+    apiClient.get('/proposals/my-proposals');
+
+// ---------- WORK & COMPLETION ----------
+export const submitWork = (jobId) =>
+    apiClient.post(`/jobs/${jobId}/submit`);
+
+export const completeJob = (jobId) =>
+    apiClient.post(`/jobs/${jobId}/complete`);
+
+export const submitRating = (jobId, ratingData) =>
+    apiClient.post(`/ratings/job/${jobId}`, ratingData);
+
+// ---------- CHAT & PROJECTS ----------
+export const getMessagesForProject = (projectId) =>
+    apiClient.get(`/projects/${projectId}/messages`);
+
+export const getUserProjects = () =>
+    apiClient.get('/projects');
+
+// ---------- COMPLAINTS ----------
+export const submitComplaint = (complaintData) =>
+    apiClient.post('/complaints', complaintData);
+
+// ---------- FILE UPLOAD ----------
+export const uploadFile = (formData) =>
+    apiClient.post('/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
     });
-};
 
-// Notifications
-export const getNotifications = () => apiClient.get('/notifications');
-export const markNotificationRead = (notificationId) => apiClient.put(`/notifications/${notificationId}/read`);
+// ---------- NOTIFICATIONS ----------
+export const getNotifications = () =>
+    apiClient.get('/notifications');
+
+export const markNotificationRead = (notificationId) =>
+    apiClient.put(`/notifications/${notificationId}/read`);
+
+// Submit a complaint
+export const createComplaint = (complaintData) => {
+    return apiClient.post('/complaints', complaintData);
+};
 
 export default apiClient;
