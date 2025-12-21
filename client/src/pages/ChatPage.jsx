@@ -18,6 +18,9 @@ export default function ChatPage() {
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
 
+    console.log("🔑 Logged In User:", user);
+    console.log("👤 User Profile Data:", profile);
+
     // Fetch Job Details for Header (Title, etc.)
     useEffect(() => {
         const fetchJobInfo = async () => {
@@ -94,6 +97,7 @@ export default function ChatPage() {
     };
 
     const sendMessageToSocket = (content, attachmentUrl, attachmentType) => {
+        console.log(user.id, profile.full_name);
         const messageData = {
             projectId,
             senderId: user.id,
