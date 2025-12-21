@@ -1,14 +1,13 @@
 import { createContext, useState, useEffect, useContext } from 'react';
-import { loginUser } from '../services/api';
+import { loginUser, getMyProfile } from '../services/api';
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
-    const [profile, setProfile] = useState(null); // Optional: if you fetch full profile on load
+    const [profile, setProfile] = useState(null); // Holds Full Name, Avatar, etc.
     const [loading, setLoading] = useState(true);
 
-    // Helper: Decode JWT manually (avoiding extra npm dependencies)
     const parseJwt = (token) => {
         try {
             return JSON.parse(atob(token.split('.')[1]));
@@ -17,32 +16,54 @@ export function AuthProvider({ children }) {
         }
     };
 
-    useEffect(() => {
-        // Check for token on app start
-        const token = localStorage.getItem('token');
-        if (token) {
-            const decoded = parseJwt(token);
-            // Check if token is expired
-            if (decoded && decoded.exp * 1000 > Date.now()) {
-                setUser(decoded.user);
-            } else {
-                localStorage.removeItem('token');
-                setUser(null);
-            }
+    // --- HELPER: Fetch Profile from DB ---
+    const fetchProfileData = async () => {
+        try {
+            const response = await getMyProfile();
+            console.log("✅ Profile Fetched:", response.data); 
+            setProfile(response.data);
+        } catch (err) {
+            console.error("❌ Could not fetch profile:", err);
+            setProfile(null);
         }
-        setLoading(false);
+    };
+
+    useEffect(() => {
+        const initAuth = async () => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                const decoded = parseJwt(token);
+                // Check if token is valid
+                if (decoded && decoded.exp * 1000 > Date.now()) {
+                    setUser(decoded.user);
+                    
+                    // IF user has a profile, fetch the details immediately
+                    if (decoded.user.hasProfile) {
+                        await fetchProfileData();
+                    }
+                } else {
+                    localStorage.removeItem('token');
+                    setUser(null);
+                    setProfile(null);
+                }
+            }
+            setLoading(false);
+        };
+        initAuth();
     }, []);
 
     const login = async (email, password) => {
         const response = await loginUser({ email, password });
         const { token } = response.data;
         
-        // 1. Save Token
         localStorage.setItem('token', token);
-        
-        // 2. Decode & Set User
         const decoded = parseJwt(token);
         setUser(decoded.user);
+
+        // Fetch profile immediately after login if they have one
+        if (decoded.user.hasProfile) {
+            await fetchProfileData();
+        }
         
         return response;
     };
@@ -51,14 +72,14 @@ export function AuthProvider({ children }) {
         localStorage.removeItem('token');
         setUser(null);
         setProfile(null);
-        // Optional: Redirect to login handled by ProtectedRoute or component logic
     };
 
-    // Called after "Create Profile" to update the 'hasProfile' flag in the token
-    const updateToken = (newToken) => {
+    // Called after "Save Profile" to update token and fetch new data
+    const updateToken = async (newToken) => {
         localStorage.setItem('token', newToken);
         const decoded = parseJwt(newToken);
         setUser(decoded.user);
+        await fetchProfileData();
     };
 
     return (
