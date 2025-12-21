@@ -57,7 +57,7 @@ export default function ComplaintPage() {
         try {
             await createComplaint(formData);
             alert('Complaint submitted successfully. Our team will review it shortly.');
-            navigate('/dashboard'); 
+            navigate('/'); 
         } catch (err) {
             console.error(err);
             setError(err.response?.data?.message || 'Failed to submit complaint.');

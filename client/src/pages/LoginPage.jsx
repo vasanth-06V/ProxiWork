@@ -27,8 +27,7 @@ export default function LoginPage() {
 
         try {
             await login(formData.email, formData.password);
-            // Redirect based on role logic could go here, or just dashboard
-            navigate('/dashboard'); 
+            navigate('/'); 
         } catch (err) {
             setError(err.response?.data?.message || 'Invalid email or password.');
         } finally {
