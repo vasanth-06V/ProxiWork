@@ -5,15 +5,10 @@ import styles from './HomePage.module.css';
 
 export default function HomePage() {
   const { user } = useAuth();
-  
-  // Activate scroll animations
   useScrollReveal();
 
   return (
     <div className={styles.wrapper}>
-      {/* REMOVED LOCAL BACKGROUND DIVS */}
-
-      {/* --- HERO SECTION --- */}
       <section className={styles.hero}>
         <div className={styles.heroContent}>
           <div className={`${styles.badge} hidden`}>🚀 The #1 Hyperlocal Marketplace</div>
@@ -39,7 +34,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* --- STATS SECTION --- */}
       <section className={styles.statsSection}>
         <div className={`${styles.statCard} hidden`}>
           <h3>5k+</h3>
@@ -55,35 +49,33 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* --- FEATURES SECTION (Glassmorphism) --- */}
       <section className={styles.features}>
         <h2 className={`${styles.sectionTitle} hidden`}>How It Works</h2>
         
         <div className={styles.grid}>
           <div className={`${styles.glassCard} hidden`}>
             <div className={styles.iconBox}>📝</div>
-            <h3>Post a Job</h3>
+            <h3 className={styles.gradientText}>Post a Job</h3>
             <p>Describe your needs, set a budget, and get ready for proposals within minutes.</p>
           </div>
           
           <div className={`${styles.glassCard} hidden`}>
             <div className={styles.iconBox}>🤝</div>
-            <h3>Hire & Chat</h3>
+            <h3 className={styles.gradientText}>Hire & Chat</h3>
             <p>Review profiles, chat in real-time, and hire the best talent for your project.</p>
           </div>
           
           <div className={`${styles.glassCard} hidden`}>
             <div className={styles.iconBox}>🛡️</div>
-            <h3>Secure Payment</h3>
+            <h3 className={styles.gradientText}>Secure Payment</h3>
             <p>Funds are held securely until the work is completed and approved by you.</p>
           </div>
         </div>
       </section>
 
-      {/* --- CALL TO ACTION --- */}
       <section className={styles.finalCta}>
         <div className={`${styles.ctaBox} hidden`}>
-          <h2>Ready to get to work?</h2>
+          <h2 >Ready to get to work?</h2>
           <p>Join thousands of users building their dreams on ProxiWork.</p>
           <Link to="/register" className={styles.whiteBtn}>Join ProxiWork Today</Link>
         </div>

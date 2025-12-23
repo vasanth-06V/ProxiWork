@@ -97,7 +97,6 @@ export default function ChatPage() {
     };
 
     const sendMessageToSocket = (content, attachmentUrl, attachmentType) => {
-        console.log(user.id, profile.full_name);
         const messageData = {
             projectId,
             senderId: user.id,

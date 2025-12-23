@@ -16,7 +16,6 @@ export function AuthProvider({ children }) {
         }
     };
 
-    // --- HELPER: Fetch Profile from DB ---
     const fetchProfileData = async () => {
         try {
             const response = await getMyProfile();

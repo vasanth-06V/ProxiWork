@@ -1,13 +1,8 @@
-/* --- GLOBAL LAYOUT --- */
 .wrapper {
     position: relative;
     width: 100%;
-    /* No background-color needed here, transparent to show global BG */
 }
 
-/* REMOVED .ambientBackground and .orb styles (Moved to index.css) */
-
-/* --- HERO SECTION --- */
 .hero {
     position: relative;
     z-index: 1;
@@ -42,6 +37,7 @@
 .gradientText {
     background: linear-gradient(135deg, #60a5fa 0%, #c084fc 100%);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -90,7 +86,6 @@
     background: rgba(255, 255, 255, 0.1);
 }
 
-/* --- STATS SECTION --- */
 .statsSection {
     position: relative;
     z-index: 1;
@@ -117,7 +112,6 @@
     margin: 0;
 }
 
-/* --- FEATURES SECTION --- */
 .features {
     position: relative;
     z-index: 1;
@@ -138,7 +132,6 @@
     gap: 2rem;
 }
 
-/* Glassmorphism Cards */
 .glassCard {
     background: rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(10px);
@@ -169,7 +162,6 @@
     line-height: 1.6;
 }
 
-/* --- CTA SECTION --- */
 .finalCta {
     position: relative;
     z-index: 1;
@@ -212,7 +204,6 @@
     transform: scale(1.05);
 }
 
-/* Mobile Adjustments */
 @media (max-width: 768px) {
     .heroTitle { font-size: 3rem; }
     .statsSection { flex-direction: column; gap: 2rem; }
