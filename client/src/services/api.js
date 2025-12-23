@@ -1,11 +1,7 @@
 import axios from 'axios';
 
-// 1. Determine the API URL
-// If running on Vercel, this uses the Environment Variable.
-// If running locally, it falls back to localhost.
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
-console.log('📡 Connecting API to:', API_URL); // Check your console to see which one it picks!
+console.log('📡 Connecting API to:', API_URL);
 
 const apiClient = axios.create({
     baseURL: API_URL,
@@ -109,7 +105,7 @@ export const getNotifications = () =>
 export const markNotificationRead = (notificationId) =>
     apiClient.put(`/notifications/${notificationId}/read`);
 
-// Submit a complaint
+//----------- COMPLAINT --------------
 export const createComplaint = (complaintData) => {
     return apiClient.post('/complaints', complaintData);
 };
