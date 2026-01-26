@@ -39,19 +39,17 @@ app.use((req, res, next) => {
 // 2. Global Error Handler Middleware
 app.use(errorMiddleware);
 
-// --- SERVER & SOCKET SETUP ---
 const server = http.createServer(app);
 
 // --- 3. SOCKET CORS FIX (PERMISSIVE MODE) ---
 const io = new Server(server, {
     cors: {
-        origin: "*", // Allow socket connection from anywhere
+        origin: "*",
         methods: ["GET", "POST"],
         credentials: true
     }
 });
 
-// Initialize Socket Logic
 socketHandler(io);
 
 const PORT = process.env.PORT || 5000;
