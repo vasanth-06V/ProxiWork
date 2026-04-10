@@ -1,117 +1,155 @@
+/* === GOOGLE FONTS === */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  /* Color Palette */
-  --primary-blue: #3b82f6;
-  --primary-blue-hover: #2563eb;
-  --primary-green: #10b981;
-  --primary-green-hover: #059669;
-  
-  --background: #0f172a; /* Deep dark blue/slate */
-  --surface: #1e293b;     /* Slightly lighter slate */
-  --surface-dark: #020617;
-  
-  --text-primary: #f8fafc;
+  /* === PREMIUM COLOR PALETTE === */
+  --primary:         #6366f1;
+  --primary-light:   #818cf8;
+  --primary-dark:    #4f46e5;
+  --accent:          #06b6d4;
+  --accent-purple:   #a855f7;
+  --accent-pink:     #ec4899;
+
+  --bg-deep:    #03050f;
+  --bg-base:    #080d1a;
+  --bg-surface: #0d1529;
+  --bg-card:    #111827;
+  --bg-card-hover: #151f35;
+
+  --border:      rgba(99, 102, 241, 0.15);
+  --border-soft: rgba(255, 255, 255, 0.06);
+  --border-glow: rgba(99, 102, 241, 0.4);
+
+  --text-primary:   #f1f5f9;
   --text-secondary: #94a3b8;
-  --border-color: #334155;
+  --text-muted:     #475569;
+
+  /* Legacy mappings (keeps old files working) */
+  --primary-blue:       #6366f1;
+  --primary-blue-hover: #4f46e5;
+  --primary-green:      #10b981;
+  --primary-green-hover:#059669;
+  --background:         #080d1a;
+  --surface:            #0d1529;
+  --surface-dark:       #03050f;
+  --border-color:       rgba(99, 102, 241, 0.15);
 
   color-scheme: dark;
   color: var(--text-primary);
-  background-color: var(--background);
+  background-color: var(--bg-base);
 }
+
+/* === BODY RESET === */
+*, *::before, *::after { box-sizing: border-box; }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background: var(--bg-base);
+  -webkit-font-smoothing: antialiased;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+a { color: inherit; text-decoration: none; }
+
+/* === PREMIUM SCROLLBAR === */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--primary), var(--accent-purple));
+  border-radius: 999px;
 }
 
-/* --- GLOBAL MOTIONAL BACKGROUND --- */
+/* === AMBIENT BACKGROUND === */
 .ambient-background {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: -1; /* Behind everything */
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  z-index: -1;
   overflow: hidden;
-  pointer-events: none; /* Let clicks pass through */
-  background: radial-gradient(circle at center, #1a1a2e 0%, #000000 100%);
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 0%, #0f0c29 0%, #080d1a 60%, #03050f 100%);
 }
 
 .orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.5; /* Slightly lowered opacity for readability on forms */
-  animation: drift 20s infinite alternate;
+  filter: blur(90px);
+  opacity: 0.35;
+  animation: drift 22s infinite alternate ease-in-out;
 }
 
-/* Three different colored orbs moving around */
 .orb1 {
-  width: 400px;
-  height: 400px;
-  background: #3b82f6; /* Blue */
-  top: -100px;
-  left: -100px;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, #6366f1, #4f46e5);
+  top: -150px; left: -150px;
 }
 
 .orb2 {
-  width: 500px;
-  height: 500px;
-  background: #8b5cf6; /* Purple */
-  bottom: -100px;
-  right: -100px;
-  animation-delay: -5s;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, #a855f7, #7c3aed);
+  bottom: -200px; right: -200px;
+  animation-delay: -8s;
 }
 
 .orb3 {
-  width: 300px;
-  height: 300px;
-  background: #ec4899; /* Pink */
-  top: 40%;
-  left: 40%;
-  animation-duration: 25s;
+  width: 350px; height: 350px;
+  background: radial-gradient(circle, #06b6d4, #0891b2);
+  top: 45%; left: 45%;
+  animation-duration: 28s;
+  animation-delay: -4s;
 }
 
 @keyframes drift {
-  0% { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(30px, 50px) scale(1.2); }
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(20px, -30px) scale(1.05); }
+  66%  { transform: translate(-15px, 20px) scale(0.95); }
+  100% { transform: translate(30px, 50px) scale(1.1); }
 }
 
-/* --- Global Scroll Animation Helpers --- */
+/* === SCROLL REVEAL === */
 .hidden {
   opacity: 0;
-  transform: translateY(30px);
-  transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(40px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
 .visible {
   opacity: 1;
   transform: translateY(0);
 }
 
-/* --- Toast Slide-in Animation --- */
+/* === TOAST ANIMATION === */
 @keyframes slideInToast {
-    from {
-        opacity: 0;
-        transform: translateX(40px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
 }
 
-/* --- Typing Indicator Bounce --- */
+/* === TYPING BOUNCE === */
 @keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-4px); }
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-5px); }
 }
+
+/* === PULSE GLOW (for notification badge) === */
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
+  50%       { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+}
+
+/* === FLOAT (for hero elements) === */
+@keyframes floatY {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-12px); }
+}
+
+/* === SHIMMER (for skeleton) === */
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
