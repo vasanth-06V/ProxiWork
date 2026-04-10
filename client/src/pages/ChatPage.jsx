@@ -5,15 +5,19 @@ import { useAuth } from '../context/AuthContext';
 import { getMessagesForProject, uploadFile, getJobById } from '../services/api';
 import { socket } from '../services/socket';
 import styles from './ChatPage.module.css';
+import { useToast } from '../context/ToastContext';
 
 export default function ChatPage() {
     const { projectId } = useParams();
     const { user, profile } = useAuth();
+    const { showToast } = useToast();
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [jobDetails, setJobDetails] = useState(null);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
+    const [isOtherTyping, setIsOtherTyping] = useState(false);
+    const typingTimeoutRef = useRef(null);
     
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
@@ -57,10 +61,19 @@ export default function ChatPage() {
             setMessages((prev) => [...prev, data]);
         };
         socket.on('receive_message', handleReceiveMessage);
+        // Typing indicator listeners
+        const handleUserTyping = () => setIsOtherTyping(true);
+        const handleUserStopTyping = () => setIsOtherTyping(false);
+
+        socket.on('user_typing', handleUserTyping);
+        socket.on('user_stop_typing', handleUserStopTyping);
+
 
         return () => {
             socket.emit('leave_project_room', projectId);
             socket.off('receive_message', handleReceiveMessage);
+            socket.off('user_typing', handleUserTyping);
+            socket.off('user_stop_typing', handleUserStopTyping);
         };
     }, [projectId, user]);
 
@@ -82,7 +95,7 @@ export default function ChatPage() {
             const { fileUrl, fileType, fileName } = response.data;
             sendMessageToSocket(fileName, fileUrl, fileType);
         } catch (err) {
-            alert('Failed to upload file.');
+            showToast('Failed to upload file. Please try again.', 'error');
         } finally {
             setUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
@@ -164,6 +177,25 @@ export default function ChatPage() {
                             </div>
                         );
                     })}
+                    {/* Typing indicator */}
+                    {isOtherTyping && (
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            padding: '0.5rem 1rem',
+                            color: 'var(--text-secondary)',
+                            fontSize: '0.85rem',
+                            fontStyle: 'italic'
+                        }}>
+                            <span style={{ display: 'flex', gap: '3px' }}>
+                                <span style={{ animation: 'bounce 1s infinite', display: 'inline-block' }}>●</span>
+                                <span style={{ animation: 'bounce 1s infinite 0.2s', display: 'inline-block' }}>●</span>
+                                <span style={{ animation: 'bounce 1s infinite 0.4s', display: 'inline-block' }}>●</span>
+                            </span>
+                            typing...
+                        </div>
+                    )}
                     <div ref={messagesEndRef} />
                 </div>
 
@@ -189,10 +221,20 @@ export default function ChatPage() {
                     <input
                         type="text"
                         value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
+                        onChange={(e) => {
+                            setNewMessage(e.target.value);
+                            // Emit typing event
+                            socket.emit('typing', { projectId });
+                            // Auto stop after 2 seconds of no typing
+                            clearTimeout(typingTimeoutRef.current);
+                            typingTimeoutRef.current = setTimeout(() => {
+                                socket.emit('stop_typing', { projectId });
+                            }, 2000);
+                        }}
                         placeholder="Type a message..."
                         className={styles.messageInput}
                     />
+
                     
                     <button type="submit" className={styles.sendButton}>
                         ➤

@@ -28,6 +28,38 @@ export default function ProfilePage() {
     if (error) return <div className={styles.error}>{error}</div>;
     if (!profile) return <div className={styles.error}>Profile not found.</div>;
 
+    // --- Compute Achievement Badges ---
+    const badges = [];
+    if (profile.linkedin_url || profile.github_url) {
+        badges.push({ icon: '✅', label: 'Verified', color: '#3b82f6' });
+    }
+    if (profile.total_ratings >= 1 && profile.rating >= 4.5) {
+        badges.push({ icon: '🌟', label: 'Top Rated', color: '#f59e0b' });
+    }
+    if (profile.total_ratings >= 1 && profile.total_ratings < 5 && profile.rating < 4.5) {
+        badges.push({ icon: '🚀', label: 'Rising Talent', color: '#8b5cf6' });
+    }
+
+    // --- Star Rating Helper ---
+    const renderStars = (rating) => {
+        const filled = Math.round(rating || 0);
+        return Array.from({ length: 5 }).map((_, i) => (
+            <span key={i} style={{ color: i < filled ? '#f59e0b' : '#374151', fontSize: '1.1rem' }}>
+                ★
+            </span>
+        ));
+    };
+
+    // --- Profile Completion Score ---
+    const completionFields = [
+        profile.full_name, profile.tagline, profile.bio,
+        profile.skills?.length, profile.profile_image_url,
+        profile.linkedin_url || profile.github_url
+    ];
+    const completionScore = Math.round(
+        (completionFields.filter(Boolean).length / completionFields.length) * 100
+    );
+
     return (
         <div className={styles.container}>
             <div className={styles.glassCard}>
@@ -59,13 +91,32 @@ export default function ProfilePage() {
                     </Link>
                 </div>
 
+                {/* --- Achievement Badges --- */}
+                {badges.length > 0 && (
+                    <div className={styles.badgesRow}>
+                        {badges.map((badge, i) => (
+                            <span
+                                key={i}
+                                className={styles.achievementBadge}
+                                style={{ borderColor: badge.color, color: badge.color }}
+                            >
+                                {badge.icon} {badge.label}
+                            </span>
+                        ))}
+                    </div>
+                )}
+
                 {/* --- Stats Row --- */}
                 <div className={styles.statsRow}>
                     <div className={styles.statItem}>
                         <span className={styles.statValue}>
-                            {profile.rating ? Number(profile.rating).toFixed(1) : 'N/A'}
+                            <span style={{ display: 'flex', justifyContent: 'center', gap: '2px' }}>
+                                {renderStars(profile.rating)}
+                            </span>
                         </span>
-                        <span className={styles.statLabel}>Avg Rating</span>
+                        <span className={styles.statLabel}>
+                            {profile.rating ? Number(profile.rating).toFixed(1) : 'No'} Rating
+                        </span>
                     </div>
                     <div className={styles.statItem}>
                         <span className={styles.statValue}>{profile.total_ratings || 0}</span>
@@ -78,6 +129,21 @@ export default function ProfilePage() {
                         <span className={styles.statLabel}>Member Since</span>
                     </div>
                 </div>
+
+                {/* --- Profile Completion Bar --- */}
+                <div className={styles.completionBar}>
+                    <div className={styles.completionLabel}>
+                        <span>Profile Completion</span>
+                        <span>{completionScore}%</span>
+                    </div>
+                    <div className={styles.completionTrack}>
+                        <div
+                            className={styles.completionFill}
+                            style={{ width: `${completionScore}%` }}
+                        ></div>
+                    </div>
+                </div>
+
 
                 {/* --- Main Content Grid --- */}
                 <div className={styles.contentGrid}>

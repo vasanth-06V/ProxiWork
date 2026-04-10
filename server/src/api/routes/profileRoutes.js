@@ -4,11 +4,13 @@ const router = express.Router();
 
 const authMiddleware = require('../../middleware/authMiddleware');
 const profileController = require('../controllers/profileController');
+const validate = require('../../middleware/validateMiddleware');
+const { profileSchema } = require('../../validators/profileValidator');
 
 // @route   POST /api/profiles
 // @desc    Create or update a user profile and return a new token
 // @access  Private
-router.post('/', authMiddleware, profileController.createOrUpdateProfile);
+router.post('/', authMiddleware, validate(profileSchema), profileController.createOrUpdateProfile);
 
 // @route   GET /api/profiles/me
 // @desc    Get the profile for the logged-in user

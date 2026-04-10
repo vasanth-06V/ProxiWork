@@ -166,7 +166,9 @@ exports.submitWork = catchAsync(async (req, res, next) => {
 
         await client.query('COMMIT');
 
+        const io = req.app.get('io');
         createNotification(
+            io,
             clientId,
             'work_submitted',
             `Work submitted for "${jobTitle}". Please review and complete.`,
@@ -209,11 +211,19 @@ exports.completeJob = catchAsync(async (req, res, next) => {
             `SELECT provider_id FROM proposals WHERE job_id = $1 AND status = 'accepted'`, 
             [jobId]
         );
+
+        if (!provRes.rows.length) {
+            await client.query('ROLLBACK');
+            return next(new AppError('Could not find assigned provider for this job.', 404));
+        }
+
         const providerId = provRes.rows[0].provider_id;
 
         await client.query('COMMIT');
 
+        const io = req.app.get('io');
         createNotification(
+            io,
             providerId,
             'job_completed',
             `Payment released! The job is marked as complete.`,

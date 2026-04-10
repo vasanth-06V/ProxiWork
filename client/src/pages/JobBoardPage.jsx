@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { getJobs } from '../services/api';
 import styles from './JobBoardPage.module.css';
 import { Link } from 'react-router-dom';
+import SkeletonCard from '../components/SkeletonCard';
 
 export default function JobBoardPage() {
   const [jobs, setJobs] = useState([]);
@@ -42,7 +43,20 @@ export default function JobBoardPage() {
     setFilteredJobs(result);
   }, [searchTerm, budgetFilter, jobs]);
 
-  if (loading) return <div className={styles.container}><p className={styles.loading}>Loading jobs...</p></div>;
+  if (loading) return (
+      <div className={styles.container}>
+          <div className={styles.header}>
+              <h1 className={styles.title}>Find Work</h1>
+              <p className={styles.subtitle}>Browse the latest opportunities</p>
+          </div>
+          <div className={styles.jobList}>
+              {Array.from({ length: 6 }).map((_, i) => (
+                  <SkeletonCard key={i} rows={2} />
+              ))}
+          </div>
+      </div>
+  );
+
 
   return (
     <div className={styles.container}>

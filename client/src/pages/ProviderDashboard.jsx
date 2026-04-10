@@ -3,6 +3,10 @@ import { useState, useEffect } from 'react';
 import { getMyProposals, submitWork } from '../services/api';
 import styles from './ProviderDashboard.module.css';
 import { Link } from 'react-router-dom';
+import { useToast } from '../context/ToastContext';
+import ConfirmationModal from '../components/ConfirmationModal';
+import SkeletonCard from '../components/SkeletonCard';
+
 
 // Helper function for styling the status badges
 const getStatusClass = (status) => {
@@ -18,6 +22,10 @@ export default function ProviderDashboard() {
     const [proposals, setProposals] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const { showToast } = useToast();
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [jobToSubmit, setJobToSubmit] = useState(null);
+
 
     const fetchMyProposals = async () => {
         try {
@@ -34,20 +42,36 @@ export default function ProviderDashboard() {
         fetchMyProposals();
     }, []);
 
-    const handleSubmitWork = async (jobId) => {
-        if (window.confirm('Are you sure you want to submit the final work for this project?')) {
-            try {
-                await submitWork(jobId);
-                alert('Work submitted successfully!');
-                fetchMyProposals();
-            } catch (err) {
-                console.error("Submit Work Error Details:", err.response || err); 
-                alert(err.response?.data?.msg || 'Failed to submit work.'); 
-            }
+   const handleSubmitWork = (jobId) => {
+        setJobToSubmit(jobId);
+        setShowConfirmModal(true);
+    };
+
+    const confirmSubmitWork = async () => {
+        try {
+            await submitWork(jobToSubmit);
+            showToast('Work submitted successfully!', 'success');
+            fetchMyProposals();
+        } catch (err) {
+            showToast(err.response?.data?.message || 'Failed to submit work.', 'error');
+        } finally {
+            setShowConfirmModal(false);
+            setJobToSubmit(null);
         }
     };
 
-    if (loading) return <p className={styles.centeredMessage}>Loading your proposals...</p>;
+
+    if (loading) return (
+        <div className={styles.container}>
+            <h1 className={styles.title}>My Proposals</h1>
+            <div className={styles.proposalList}>
+                {Array.from({ length: 4 }).map((_, i) => (
+                    <SkeletonCard key={i} rows={2} />
+                ))}
+            </div>
+        </div>
+    );
+
     if (error) return <p className={`${styles.centeredMessage} ${styles.error}`}>{error}</p>;
 
     return (
@@ -88,6 +112,13 @@ export default function ProviderDashboard() {
                     <p className={styles.centeredMessage}>You have not submitted any proposals yet.</p>
                 )}
             </div>
+            <ConfirmationModal
+                isOpen={showConfirmModal}
+                onClose={() => setShowConfirmModal(false)}
+                onConfirm={confirmSubmitWork}
+                title="Submit Final Work"
+                message="Are you sure you want to submit the final work for this project? This cannot be undone."
+            />
         </div>
     );
 }

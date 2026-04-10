@@ -1,7 +1,9 @@
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-console.log('📡 Connecting API to:', API_URL);
+//console.log('📡 Connecting API to:', API_URL);
+
+
 
 const apiClient = axios.create({
     baseURL: API_URL,
@@ -92,6 +94,9 @@ export const getUserProjects = () =>
 export const submitComplaint = (complaintData) =>
     apiClient.post('/complaints', complaintData);
 
+export const getMyComplaints = () =>
+    apiClient.get('/complaints/my-complaints');
+
 // ---------- FILE UPLOAD ----------
 export const uploadFile = (formData) =>
     apiClient.post('/upload', formData, {
@@ -104,10 +109,5 @@ export const getNotifications = () =>
 
 export const markNotificationRead = (notificationId) =>
     apiClient.put(`/notifications/${notificationId}/read`);
-
-//----------- COMPLAINT --------------
-export const createComplaint = (complaintData) => {
-    return apiClient.post('/complaints', complaintData);
-};
 
 export default apiClient;

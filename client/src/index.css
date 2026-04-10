@@ -97,3 +97,21 @@ a {
   opacity: 1;
   transform: translateY(0);
 }
+
+/* --- Toast Slide-in Animation --- */
+@keyframes slideInToast {
+    from {
+        opacity: 0;
+        transform: translateX(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* --- Typing Indicator Bounce --- */
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}

@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createComplaint, uploadFile } from '../services/api';
+import { submitComplaint, uploadFile } from '../services/api';
 // Make sure this file exists in the same folder!
 import styles from './ComplaintPage.module.css';
 
@@ -55,7 +55,7 @@ export default function ComplaintPage() {
         }
 
         try {
-            await createComplaint(formData);
+            await submitComplaint(formData);
             alert('Complaint submitted successfully. Our team will review it shortly.');
             navigate('/'); 
         } catch (err) {

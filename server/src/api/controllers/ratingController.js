@@ -19,7 +19,7 @@ exports.submitRating = catchAsync(async (req, res, next) => {
         await client.query('BEGIN'); 
 
         const jobRes = await client.query(
-            `SELECT client_id, status FROM jobs WHERE job_id = $1`, [jobId]
+            `SELECT client_id, status FROM jobs WHERE job_id = $1 FOR UPDATE`, [jobId]
         );
         if (jobRes.rows.length === 0 || jobRes.rows[0].client_id !== clientId) {
              await client.query('ROLLBACK');
@@ -62,7 +62,9 @@ exports.submitRating = catchAsync(async (req, res, next) => {
 
         await client.query('COMMIT');
 
+        const io = req.app.get('io');
         createNotification(
+            io,
             providerId,
             'new_rating',
             `You received a new ${score}-star rating!`,

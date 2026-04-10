@@ -7,8 +7,11 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import EditJobModal from '../components/EditJobModal';
 import RatingModal from '../components/RatingModal';
 import PaymentModal from '../components/PaymentModal';
+import { useToast } from '../context/ToastContext';
+import SkeletonCard from '../components/SkeletonCard';
 
 export default function DashboardPage() {
+    const { showToast } = useToast();
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -55,7 +58,7 @@ export default function DashboardPage() {
             await deleteJob(jobToDelete.job_id);
             fetchMyJobs(); 
         } catch (err) {
-            alert('Failed to delete job. It might already be in progress or you are not the owner.');
+            showToast('Failed to delete job. It might already be in progress.', 'error');
         } finally {
             setShowDeleteModal(false);
             setJobToDelete(null);
@@ -82,10 +85,11 @@ export default function DashboardPage() {
         if (!jobToPay) return;
         try {
             await completeJob(jobToPay.job_id);
-            alert('Payment released successfully! You can now rate the provider.');
+           showToast('Payment released! You can now rate the provider.', 'success');
             fetchMyJobs();
         } catch (err) {
-             alert(err.response?.data?.msg || 'Failed to complete job.');
+            showToast(err.response?.data?.message || 'Failed to complete job.', 'error');
+
         } finally {
             setShowPaymentModal(false);
             setJobToPay(null);
@@ -102,7 +106,7 @@ export default function DashboardPage() {
         if (!jobToRate) return;
         try {
             await submitRating(jobToRate.job_id, ratingData);
-            alert('Rating submitted successfully!');
+            showToast('Rating submitted successfully!', 'success');
             setShowRatingModal(false);
             setJobToRate(null);
             fetchMyJobs(); // This will re-fetch jobs, and is_rated should now be true from backend
@@ -122,7 +126,19 @@ export default function DashboardPage() {
         }
     };
 
-    if (loading) return <p className={styles.centeredMessage}>Loading your dashboard...</p>;
+    if (loading) return (
+        <div className={styles.container}>
+            <div className={styles.header}>
+                <h1 className={styles.title}>My Job Postings</h1>
+            </div>
+            <div className={styles.jobList}>
+                {Array.from({ length: 4 }).map((_, i) => (
+                    <SkeletonCard key={i} rows={2} />
+                ))}
+            </div>
+        </div>
+    );
+
     if (error) return <p className={`${styles.centeredMessage} ${styles.error}`}>{error}</p>;
 
     return (

@@ -35,13 +35,15 @@ exports.acceptProposal = catchAsync(async (req, res, next) => {
 
         await client.query('COMMIT');
         
+        const io = req.app.get('io');
         createNotification(
+            io,
             providerId, 
             'proposal_accepted', 
             'Your proposal has been accepted! You can now start the job.',
             '/my-proposals'
         );
-        
+
         res.json({ msg: 'Proposal accepted successfully. The job is now in progress.' });
 
     } catch (err) {

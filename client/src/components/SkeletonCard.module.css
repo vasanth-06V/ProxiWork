@@ -1,0 +1,61 @@
+/* client/src/components/SkeletonCard.module.css */
+
+.card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    overflow: hidden;
+}
+
+/* The shimmer animation base */
+.shimmer {
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.12) 50%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.6s infinite;
+    border-radius: 8px;
+}
+
+@keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Skeleton shapes */
+.titleBar {
+    height: 24px;
+    width: 70%;
+    margin-bottom: 0.5rem;
+}
+
+.row {
+    height: 14px;
+}
+
+.actionRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.5rem;
+    gap: 1rem;
+}
+
+.badge {
+    height: 28px;
+    width: 80px;
+    border-radius: 20px;
+}
+
+.button {
+    height: 36px;
+    width: 100px;
+    border-radius: 8px;
+}

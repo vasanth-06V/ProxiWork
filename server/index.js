@@ -12,7 +12,7 @@ const errorMiddleware = require('./src/middleware/errorMiddleware');
 const socketHandler = require('./src/socket/socketHandler'); 
 
 app.use(cors({
-    origin: true, 
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true
 }));
@@ -41,19 +41,38 @@ app.use(errorMiddleware);
 
 const server = http.createServer(app);
 
-// --- 3. SOCKET CORS FIX (PERMISSIVE MODE) ---
 const io = new Server(server, {
     cors: {
-        origin: "*",
+        origin: process.env.FRONTEND_URL || 'http://localhost:5173',
         methods: ["GET", "POST"],
         credentials: true
     }
 });
 
+// Make io accessible to all controllers via app locals
+app.set('io', io);
+
 socketHandler(io);
 
 const PORT = process.env.PORT || 5000;
 
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
     console.log(`Server is running on http://localhost:${PORT}`);
+    
+    // --- DB Connection Check ---
+    try {
+        const result = await pool.query('SELECT NOW()');
+        console.log(`✅ Database connected at: ${result.rows[0].now}`);
+    } catch (err) {
+        console.error('❌ Database connection FAILED:', err.message);
+    }
+});
+
+// --- Handle Uncaught Errors (prevent silent crashes) ---
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('🔥 Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+    console.error('🔥 Uncaught Exception:', err.message);
 });
