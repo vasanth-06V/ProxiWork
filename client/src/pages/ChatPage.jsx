@@ -61,6 +61,10 @@ export default function ChatPage() {
             setMessages((prev) => [...prev, data]);
         };
         socket.on('receive_message', handleReceiveMessage);
+        const handleMessageError = (errMsg) => {
+            showToast(errMsg || 'Failed to send message', 'error');
+        };
+        socket.on('message_error', handleMessageError);
         // Typing indicator listeners
         const handleUserTyping = () => setIsOtherTyping(true);
         const handleUserStopTyping = () => setIsOtherTyping(false);
@@ -74,6 +78,7 @@ export default function ChatPage() {
             socket.off('receive_message', handleReceiveMessage);
             socket.off('user_typing', handleUserTyping);
             socket.off('user_stop_typing', handleUserStopTyping);
+            socket.off('message_error', handleMessageError);
         };
     }, [projectId, user]);
 
@@ -110,17 +115,17 @@ export default function ChatPage() {
     };
 
     const sendMessageToSocket = (content, attachmentUrl, attachmentType) => {
+        if (!user) return;
         const messageData = {
             projectId,
-            senderId: user.id,
-            sender_name: profile.full_name,
-            content: content || "Sent an attachment",
+            content: content || 'Sent an attachment',
+            sender_name: profile?.full_name || 'User',   // ← safe now
             attachmentUrl,
             attachmentType,
-            created_at: new Date().toISOString(),
         };
         socket.emit('send_message', messageData);
     };
+
     
     if (loading) return <div className={styles.loading}>Loading Chat...</div>;
 

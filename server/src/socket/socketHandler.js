@@ -71,15 +71,24 @@ module.exports = (io) => {
                     [projectId, senderId, content, attachmentUrl, attachmentType]
                 );
 
+                // Fetch sender name from DB
+                const senderResult = await pool.query(
+                    `SELECT full_name FROM user_profiles WHERE user_id = $1`,
+                    [senderId]
+                );
+                const sender_name = senderResult.rows[0]?.full_name || 'User';
+
                 // Broadcast to room
                 io.to(projectId).emit('receive_message', {
                     projectId,
                     senderId,
+                    sender_name,
                     content,
                     attachmentUrl,
                     attachmentType,
                     created_at: result.rows[0].created_at,
                 });
+
 
             } catch (err) {
                 console.error('❌ Message save failed:', err);
