@@ -1,0 +1,142 @@
+================================================================
+           PROXIWORK — COMMAND REFERENCE
+================================================================
+
+----------------------------------------------------------------
+  SERVER — Run Commands
+----------------------------------------------------------------
+
+Start server (development with auto-restart):
+  cd server
+  npm run dev
+
+Start server (normal, no auto-restart):
+  cd server
+  node index.js
+
+Install server dependencies:
+  cd server
+  npm install
+
+Install a new package to server:
+  cd server
+  npm install <package-name>
+
+----------------------------------------------------------------
+  CLIENT — Run Commands
+----------------------------------------------------------------
+
+Start client (development):
+  cd client
+  npm run dev
+
+Build client for production:
+  cd client
+  npm run build
+
+Preview production build locally:
+  cd client
+  npm run preview
+
+Install client dependencies:
+  cd client
+  npm install
+
+Install a new package to client:
+  cd client
+  npm install <package-name>
+
+----------------------------------------------------------------
+  GIT — Daily Workflow
+----------------------------------------------------------------
+
+Check what files are changed:
+  git status
+
+See what changed inside files:
+  git diff
+
+Stage all changed files:
+  git add .
+
+Stage a specific file:
+  git add <filename>
+
+Commit staged files:
+  git commit -m "your message here"
+
+Push to GitHub:
+  git push origin main
+
+Pull latest from GitHub:
+  git pull origin main
+
+----------------------------------------------------------------
+  GIT — History & Info
+----------------------------------------------------------------
+
+View commit history (short):
+  git log --oneline
+
+View commit history (last 10):
+  git log --oneline -10
+
+View full commit history:
+  git log
+
+Check which remote is connected:
+  git remote -v
+
+----------------------------------------------------------------
+  GIT — Branching (for V2 feature development)
+----------------------------------------------------------------
+
+Create a new branch:
+  git checkout -b feature/branch-name
+
+Switch to an existing branch:
+  git checkout branch-name
+
+List all branches:
+  git branch
+
+Merge branch into main:
+  git checkout main
+  git merge feature/branch-name
+
+Delete a branch after merge:
+  git branch -d feature/branch-name
+
+----------------------------------------------------------------
+  GIT — Undo / Fixes
+----------------------------------------------------------------
+
+Undo changes in a file (not yet staged):
+  git checkout -- <filename>
+
+Unstage a file (keep changes):
+  git reset HEAD <filename>
+
+Undo last commit (keep changes in files):
+  git reset --soft HEAD~1
+
+Check which files are being ignored:
+  git check-ignore -v <filename>
+
+Remove a file from git tracking (keep file locally):
+  git rm --cached <filename>
+
+----------------------------------------------------------------
+  USEFUL — Check Ports (Windows)
+----------------------------------------------------------------
+
+See what is running on port 5000:
+  netstat -ano | findstr :5000
+
+See what is running on port 5173:
+  netstat -ano | findstr :5173
+
+Kill a process by PID:
+  taskkill /PID <pid_number> /F
+
+================================================================
