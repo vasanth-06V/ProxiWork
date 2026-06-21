@@ -134,15 +134,9 @@ export default function Navbar() {
 
                   {dropdownOpen && (
                     <div className={styles.dropdown}>
-                      {user.hasProfile ? (
-                        <Link to="/profile" className={styles.dropdownItem} onClick={() => setDropdownOpen(false)}>
-                          👤 View Profile
-                        </Link>
-                      ) : (
-                        <Link to="/create-profile" className={styles.dropdownItemHighlight} onClick={() => setDropdownOpen(false)}>
-                          ✨ Complete Profile
-                        </Link>
-                      )}
+                      <Link to="/settings" className={styles.dropdownItem} onClick={() => setDropdownOpen(false)}>
+                        ⚙️ Settings
+                      </Link>
                       <Link to="/complaint" className={styles.dropdownItem} onClick={() => setDropdownOpen(false)}>
                         🛡️ Support
                       </Link>
@@ -187,6 +181,7 @@ export default function Navbar() {
           {user?.role === 'provider' && (
             <Link to="/my-proposals" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>📋 My Proposals</Link>
           )}
+          {user && <Link to="/settings" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>⚙️ Settings</Link>}
           {user && <Link to="/messages" className={styles.mobileLink} onClick={() => setMobileOpen(false)}>💬 Messages</Link>}
           <div className={styles.mobileDivider} />
           {!user ? (

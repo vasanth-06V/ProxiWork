@@ -62,3 +62,74 @@ exports.login = catchAsync(async (req, res, next) => {
         }
     );
 });
+
+// @route   PUT /api/auth/change-password
+// @desc    Change logged-in user's password
+// @access  Private
+exports.changePassword = catchAsync(async (req, res, next) => {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user.id;
+
+    if (!currentPassword || !newPassword) {
+        return next(new AppError('Please provide current and new password', 400));
+    }
+
+    if (newPassword.length < 6) {
+        return next(new AppError('New password must be at least 6 characters', 400));
+    }
+
+    // Get current user's password hash
+    const userResult = await pool.query('SELECT * FROM users WHERE user_id = $1', [userId]);
+    if (userResult.rows.length === 0) {
+        return next(new AppError('User not found', 404));
+    }
+    const user = userResult.rows[0];
+
+    // Verify the current password
+    const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!isMatch) {
+        return next(new AppError('Current password is incorrect', 400));
+    }
+
+    // Hash the new password and update
+    const salt = await bcrypt.genSalt(10);
+    const newHash = await bcrypt.hash(newPassword, salt);
+    await pool.query('UPDATE users SET password_hash = $1 WHERE user_id = $2', [newHash, userId]);
+
+    res.status(200).json({ message: 'Password changed successfully' });
+});
+
+// @route   DELETE /api/auth/delete-account
+// @desc    Permanently delete logged-in user's account
+// @access  Private
+exports.deleteAccount = catchAsync(async (req, res, next) => {
+    const userId = req.user.id;
+    const userRole = req.user.role;
+
+    // Prevent deletion if client has active jobs
+    if (userRole === 'client') {
+        const activeJobs = await pool.query(
+            "SELECT 1 FROM jobs WHERE client_id = $1 AND status IN ('in_progress', 'submitted')",
+            [userId]
+        );
+        if (activeJobs.rows.length > 0) {
+            return next(new AppError('You have active jobs in progress. Please complete or cancel them before deleting your account.', 400));
+        }
+    }
+
+    // Prevent deletion if provider has accepted work still running
+    if (userRole === 'provider') {
+        const activeWork = await pool.query(
+            "SELECT 1 FROM proposals p JOIN jobs j ON p.job_id = j.job_id WHERE p.provider_id = $1 AND p.status = 'accepted' AND j.status IN ('in_progress', 'submitted')",
+            [userId]
+        );
+        if (activeWork.rows.length > 0) {
+            return next(new AppError('You have active work in progress. Please complete it before deleting your account.', 400));
+        }
+    }
+
+    // Delete the user (DB CASCADE handles related records)
+    await pool.query('DELETE FROM users WHERE user_id = $1', [userId]);
+
+    res.status(200).json({ message: 'Account deleted successfully' });
+});

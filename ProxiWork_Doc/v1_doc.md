@@ -227,7 +227,9 @@ Proxiwork/
 │           ├── ChatPage.jsx          ← Real-time project chat
 │           ├── ChatPage.module.css
 │           ├── ComplaintPage.jsx     ← Submit complaint / support ticket
-│           └── ComplaintPage.module.css
+│           ├── ComplaintPage.module.css
+│           ├── SettingsPage.jsx      ← Account hub: profile view + security + danger zone
+│           └── SettingsPage.module.css
 │
 └── server/                          ← Express.js Backend (Port 5000)
     ├── index.js                     ← Server entry point (Express + Socket.IO)
@@ -453,6 +455,45 @@ After successful registration → `alert('Registration successful! Please log in
 
 ---
 
+### Change Password
+
+**Endpoint:** `PUT /api/auth/change-password`
+**Access:** 🔒 Private (any authenticated user)
+
+**Request Body:**
+- `currentPassword` — required
+- `newPassword` — required, min 6 characters
+
+**Process:**
+1. Validate both fields are present
+2. Validate `newPassword.length >= 6`
+3. Fetch user from DB by `req.user.id`
+4. `bcrypt.compare(currentPassword, user.password_hash)` — verify current password
+5. If mismatch → 400 "Current password is incorrect"
+6. `bcrypt.genSalt(10)` → `bcrypt.hash(newPassword)` → update DB
+7. Return `{ message: 'Password changed successfully' }`
+
+**Frontend (SettingsPage → Security tab):**
+Form with 3 fields: current password, new password, confirm password. Client validates match before sending request.
+
+---
+
+### Delete Account
+
+**Endpoint:** `DELETE /api/auth/delete-account`
+**Access:** 🔒 Private (any authenticated user)
+
+**Process:**
+1. If client → check for jobs with `status IN ('in_progress', 'submitted')` — if any → block with 400
+2. If provider → check for accepted proposals on in-progress/submitted jobs — if any → block with 400
+3. `DELETE FROM users WHERE user_id = $1` — DB CASCADE handles related records
+4. Return `{ message: 'Account deleted successfully' }`
+
+**Frontend (SettingsPage → Danger Zone tab):**
+Red bordered danger card → "Delete Account" button → opens `ConfirmationModal` → on confirm → calls API → `logout()` → redirects to `/`
+
+---
+
 ### JWT Verification (Protected Routes)
 
 **File:** `authMiddleware.js`  
@@ -537,8 +578,8 @@ Allows users (both clients and providers) to create and manage their public prof
 
 ### View Profile
 
-**Endpoint:** `GET /api/profiles/me`  
-**Access:** 🔒 Private  
+**Endpoint:** `GET /api/profiles/me`
+**Access:** 🔒 Private
 
 Returns full profile joined with user email:
 ```sql
@@ -548,18 +589,18 @@ JOIN users u ON p.user_id = u.user_id
 WHERE p.user_id = $1
 ```
 
-**ProfilePage features:**
-- Avatar (image or initial letter fallback)
-- Name, tagline, role badge
+> **Note (Updated):** Profile view has been consolidated into `SettingsPage.jsx` (Account tab). The `/profile` route still exists but the primary entry point is Settings → Account. The "View Profile" and "Complete Profile" links have been removed from the Navbar dropdown — Settings is now the single hub.
+
+**Profile Account Tab features (SettingsPage):**
+- Profile card: avatar (image or initial letter fallback), name, tagline, role badge
 - Achievement badges (logic below)
-- Star rating display
-- Total reviews count
-- Member since year
+- Stats row: star rating, total reviews, member since year
 - Profile completion percentage bar (6 fields checked)
+- Account details: email, phone, LinkedIn, GitHub links
 - About Me (bio)
-- Contact & Socials (email, phone, LinkedIn, GitHub)
 - Skills list as chips
-- Edit Profile button
+- ✏️ Edit Profile button (top right) → `/profile/edit`
+- Empty state for users with no profile → "Create Profile" button → `/create-profile`
 
 **Achievement Badge Logic:**
 | Badge | Condition |
@@ -1087,7 +1128,7 @@ Public-facing page listing all open jobs. Any visitor (logged in or not) can bro
 | `JobDetailPage` | `/jobs/:jobId` | Public | Job info + apply (providers) / view proposals (client owner) |
 | `EditProfilePage` | `/create-profile` | 🔒 | First-time profile creation |
 | `EditProfilePage` | `/profile/edit` | 🔒 | Edit existing profile |
-| `ProfilePage` | `/profile` | 🔒 | View own full profile |
+| `ProfilePage` | `/profile` | 🔒 | View own full profile (route kept; primary entry is now Settings) |
 | `PostJobPage` | `/jobs/new` | 🔒 | Post a new job (clients only) |
 | `DashboardPage` | `/dashboard` | 🔒 | Client: manage own jobs, status tracking, actions |
 | `ViewProposalsPage` | `/jobs/:jobId/proposals` | 🔒 | Client: review + accept/reject proposals |
@@ -1095,6 +1136,7 @@ Public-facing page listing all open jobs. Any visitor (logged in or not) can bro
 | `MessagesPage` | `/messages` | 🔒 | List all active project conversations |
 | `ChatPage` | `/projects/:projectId/chat` | 🔒 | Real-time project chat |
 | `ComplaintPage` | `/complaint` | 🔒 | Submit a support/complaint ticket |
+| `SettingsPage` | `/settings` | 🔒 | Account hub: profile view + change password + delete account |
 
 ---
 
@@ -1102,7 +1144,7 @@ Public-facing page listing all open jobs. Any visitor (logged in or not) can bro
 
 | Component | Purpose |
 |---|---|
-| `Navbar` | Global navigation — role-aware links, notification bell + dropdown, profile avatar + dropdown, mobile hamburger menu |
+| `Navbar` | Global navigation — role-aware links, notification bell + dropdown, profile avatar + dropdown (Settings, Support, Logout), mobile hamburger menu. Note: "View Profile" and "Complete Profile" removed from dropdown — Settings is now the single entry point. |
 | `GradientBackground` | Animated HTML5 canvas — 5 color blobs drifting with sinusoidal motion (Stripe-style), rendered at 60fps using `requestAnimationFrame` |
 | `ProtectedRoute` | React Router route wrapper — redirects unauthenticated users to `/login` |
 | `Modal` | Generic modal overlay wrapper with title and close button |
@@ -1122,6 +1164,8 @@ Public-facing page listing all open jobs. Any visitor (logged in or not) can bro
 |---|---|---|---|---|
 | POST | `/register` | Public | 5/15min | Register new user |
 | POST | `/login` | Public | 10/15min | Login, returns JWT |
+| PUT | `/change-password` | 🔒 | — | Change logged-in user's password |
+| DELETE | `/delete-account` | 🔒 | — | Permanently delete account (checks for active work first) |
 
 ### Profile Routes — `/api/profiles`
 | Method | Endpoint | Auth | Description |

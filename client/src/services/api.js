@@ -31,6 +31,12 @@ export const registerUser = (userData) =>
 export const loginUser = (userData) =>
     apiClient.post('/auth/login', userData);
 
+export const changePassword = (data) =>
+    apiClient.put('/auth/change-password', data);
+
+export const deleteAccount = () =>
+    apiClient.delete('/auth/delete-account');
+
 // ---------- PROFILES ----------
 export const getMyProfile = () =>
     apiClient.get('/profiles/me');

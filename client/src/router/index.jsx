@@ -13,7 +13,8 @@ import ProviderDashboard from '../pages/ProviderDashboard';
 import ProfilePage from '../pages/ProfilePage';
 import ComplaintPage from '../pages/ComplaintPage';
 import ChatPage from '../pages/ChatPage';
-import MessagesPage from '../pages/MessagesPage'; // Imported MessagesPage
+import MessagesPage from '../pages/MessagesPage';
+import SettingsPage from '../pages/SettingsPage';
 
 export default function AppRouter() {
   return (
@@ -39,6 +40,7 @@ export default function AppRouter() {
         
         {/* The new Messages route */}
         <Route path="/messages" element={<MessagesPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Route>
     </Routes>
   );
