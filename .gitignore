@@ -20,6 +20,10 @@ npm-debug.log*
 
 # commands reference file
 *.txt
+work_ref/
+
+# Project documentation
+ProxiWork_Doc/
 
 # Local database schema reference
 database_schema/
