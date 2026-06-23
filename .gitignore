@@ -20,3 +20,6 @@ npm-debug.log*
 
 # commands reference file
 *.txt
+
+# Local database schema reference
+database_schema/
