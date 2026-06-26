@@ -8,7 +8,13 @@ const submitProposalSchema = Joi.object({
   bid_amount: Joi.number().positive().required().messages({
     'number.positive': 'Bid amount must be a positive number',
     'any.required': 'Bid amount is required'
-  })
+  }),
+  proposal_answers: Joi.array()
+    .items(Joi.string().max(500).allow(''))
+    .optional()
+    .messages({
+      'array.base': 'Proposal answers must be an array'
+    })
 });
 
 module.exports = { submitProposalSchema };

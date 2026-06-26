@@ -76,6 +76,15 @@ export const acceptProposal = (proposalId) =>
 export const rejectProposal = (proposalId) =>
     apiClient.post(`/proposals/${proposalId}/reject`);
 
+export const shortlistProposal = (proposalId) =>
+    apiClient.post(`/proposals/${proposalId}/shortlist`);
+
+export const withdrawProposal = (proposalId) =>
+    apiClient.post(`/proposals/${proposalId}/withdraw`);
+
+export const viewProposal = (proposalId) =>
+    apiClient.put(`/proposals/${proposalId}/view`);
+
 export const getMyProposals = () =>
     apiClient.get('/proposals/my-proposals');
 

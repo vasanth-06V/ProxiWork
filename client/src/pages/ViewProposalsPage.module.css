@@ -139,9 +139,11 @@
     letter-spacing: 0.05em;
 }
 
-.pending { background-color: rgba(245, 158, 11, 0.2); color: #f59e0b; }
-.accepted { background-color: rgba(16, 185, 129, 0.2); color: #34d399; }
-.rejected { background-color: rgba(239, 68, 68, 0.2); color: #ef4444; }
+.pending     { background-color: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+.shortlisted { background-color: rgba(139, 92, 246, 0.2); color: #a78bfa; }
+.accepted    { background-color: rgba(16, 185, 129, 0.2); color: #34d399; }
+.rejected    { background-color: rgba(239, 68, 68, 0.2);  color: #ef4444; }
+.withdrawn   { background-color: rgba(148, 163, 184, 0.15); color: #94a3b8; }
 
 .buttonGroup {
     display: flex;
@@ -150,7 +152,7 @@
     width: 100%;
 }
 
-.acceptButton, .rejectButton {
+.acceptButton, .rejectButton, .shortlistButton {
     padding: 0.6rem 1rem;
     border-radius: 0.5rem;
     border: none;
@@ -204,4 +206,82 @@
         flex-direction: row;
         width: auto;
     }
+}
+
+/* Shortlisted card highlight */
+.shortlistedCard {
+    border-color: rgba(139, 92, 246, 0.4);
+    box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.2);
+}
+
+/* Unread / New badge */
+.unreadBadge {
+    display: inline-block;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 9999px;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Rating */
+.rating {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* Shortlist button */
+.shortlistButton {
+    background-color: rgba(139, 92, 246, 0.15);
+    color: #a78bfa;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.shortlistButton:hover {
+    background-color: rgba(139, 92, 246, 0.25);
+}
+
+/* Toggle answers button */
+.toggleAnswersBtn {
+    margin-top: 0.75rem;
+    background: transparent;
+    color: var(--primary-blue);
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 0;
+    text-decoration: underline;
+}
+
+/* Answers container */
+.answersContainer {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    background: rgba(0,0,0,0.2);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    border-left: 3px solid var(--primary-blue);
+}
+
+.qaBlock { display: flex; flex-direction: column; gap: 0.25rem; }
+
+.question {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin: 0 0 0.25rem 0;
+}
+
+.answer {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.5;
 }

@@ -10,6 +10,7 @@ export default function PostJobPage() {
         budget: '',
         deadline: ''
     });
+    const [questions, setQuestions] = useState([]); // Array of question strings
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
@@ -17,11 +18,37 @@ export default function PostJobPage() {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    // Add a blank question slot (max 5)
+    const handleAddQuestion = () => {
+        if (questions.length >= 5) return;
+        setQuestions([...questions, '']);
+    };
+
+    // Update a specific question text
+    const handleQuestionChange = (index, value) => {
+        const updated = [...questions];
+        updated[index] = value;
+        setQuestions(updated);
+    };
+
+    // Remove a question
+    const handleRemoveQuestion = (index) => {
+        setQuestions(questions.filter((_, i) => i !== index));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError(null);
+
+        // Filter out blank questions
+        const filteredQuestions = questions.map(q => q.trim()).filter(q => q.length > 0);
+
         try {
-            await createJob(formData);
-            navigate('/dashboard'); // Redirect to dashboard after posting
+            await createJob({
+                ...formData,
+                job_questions: filteredQuestions.length > 0 ? filteredQuestions : undefined
+            });
+            navigate('/dashboard');
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to post job. Please try again.');
         }
@@ -92,6 +119,50 @@ export default function PostJobPage() {
                             rows="6"
                             className={styles.textarea}
                         ></textarea>
+                    </div>
+
+                    {/* Proposal Questions Section */}
+                    <div className={styles.questionsSection}>
+                        <div className={styles.questionsSectionHeader}>
+                            <div>
+                                <h3 className={styles.sectionTitle}>Proposal Questions</h3>
+                                <p className={styles.sectionHint}>
+                                    Optional — Ask providers up to 5 questions before they apply. ({questions.length}/5)
+                                </p>
+                            </div>
+                            {questions.length < 5 && (
+                                <button
+                                    type="button"
+                                    onClick={handleAddQuestion}
+                                    className={styles.addQuestionBtn}
+                                >
+                                    + Add Question
+                                </button>
+                            )}
+                        </div>
+
+                        {questions.map((q, index) => (
+                            <div key={index} className={styles.questionRow}>
+                                <span className={styles.questionNumber}>Q{index + 1}</span>
+                                <input
+                                    type="text"
+                                    value={q}
+                                    maxLength={150}
+                                    onChange={(e) => handleQuestionChange(index, e.target.value)}
+                                    placeholder="e.g. How many years of experience do you have?"
+                                    className={styles.questionInput}
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveQuestion(index)}
+                                    className={styles.removeQuestionBtn}
+                                    title="Remove question"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        ))}
                     </div>
 
                     <button type="submit" className={styles.submitButton}>

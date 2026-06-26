@@ -11,12 +11,31 @@ exports.createJob = catchAsync(async (req, res, next) => {
         return next(new AppError('Forbidden: Only clients can post jobs', 403));
     }
 
-    const { title, description, budget, deadline } = req.body;
+    const { title, description, budget, deadline, job_questions } = req.body;
     const clientId = req.user.id;
 
+    // Validate job_questions if provided: max 5, each question max 150 chars
+    if (job_questions) {
+        if (!Array.isArray(job_questions) || job_questions.length > 5) {
+            return next(new AppError('You can add a maximum of 5 proposal questions.', 400));
+        }
+        for (const q of job_questions) {
+            if (typeof q !== 'string' || q.trim().length === 0) {
+                return next(new AppError('Each question must be a non-empty string.', 400));
+            }
+            if (q.length > 150) {
+                return next(new AppError('Each question must be at most 150 characters.', 400));
+            }
+        }
+    }
+
+    const questionsValue = (job_questions && job_questions.length > 0)
+        ? JSON.stringify(job_questions)
+        : null;
+
     const newJob = await pool.query(
-        'INSERT INTO jobs (client_id, title, description, budget, deadline) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-        [clientId, title, description, budget, deadline || null]
+        'INSERT INTO jobs (client_id, title, description, budget, deadline, job_questions) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+        [clientId, title, description, budget, deadline || null, questionsValue]
     );
 
     res.status(201).json(newJob.rows[0]);
@@ -58,9 +77,8 @@ exports.getAllJobs = catchAsync(async (req, res, next) => {
 exports.getJobById = catchAsync(async (req, res, next) => {
     const { id } = req.params;
 
-    // Fixed: Added JOINs to get the client_name
     const job = await pool.query(
-        `SELECT j.*, 
+        `SELECT j.*,
             COALESCE(p.full_name, u.email) AS client_name
          FROM jobs j
          LEFT JOIN profiles p ON j.client_id = p.user_id
@@ -96,11 +114,22 @@ exports.getProposalsForJob = catchAsync(async (req, res, next) => {
     }
 
     const proposals = await pool.query(
-        `SELECT p.proposal_id, p.cover_letter, p.bid_amount, p.status, p.created_at, pr.full_name, pr.tagline 
+        `SELECT p.proposal_id, p.cover_letter, p.bid_amount, p.status, p.created_at,
+                p.is_viewed, p.viewed_at, p.proposal_answers,
+                p.provider_id,
+                pr.full_name, pr.tagline, pr.rating, pr.total_ratings, pr.profile_image_url
             FROM proposals p
             JOIN profiles pr ON p.provider_id = pr.user_id
             WHERE p.job_id = $1
-            ORDER BY p.created_at ASC`,
+            ORDER BY
+                CASE p.status
+                    WHEN 'shortlisted' THEN 1
+                    WHEN 'pending'     THEN 2
+                    WHEN 'accepted'    THEN 3
+                    WHEN 'rejected'    THEN 4
+                    WHEN 'withdrawn'   THEN 5
+                END,
+                p.created_at ASC`,
         [jobId]
     );
 
@@ -108,28 +137,90 @@ exports.getProposalsForJob = catchAsync(async (req, res, next) => {
 });
 
 exports.submitProposal = catchAsync(async (req, res, next) => {
+    // TODO V1.2: enforce verification guard — check req.user.isVerified === true
     if (req.user.role !== 'provider') {
         return next(new AppError('Forbidden: Only providers can submit proposals', 403));
     }
 
-    const { cover_letter, bid_amount } = req.body;
+    if (!req.user.hasProfile) {
+        return next(new AppError('Please complete your profile before submitting a proposal.', 403));
+    }
+
+    const { cover_letter, bid_amount, proposal_answers } = req.body;
     const { id: jobId } = req.params;
     const providerId = req.user.id;
 
+    // Validate proposal_answers if provided — must be array of strings, max 500 chars each
+    if (proposal_answers) {
+        if (!Array.isArray(proposal_answers)) {
+            return next(new AppError('proposal_answers must be an array.', 400));
+        }
+        for (const a of proposal_answers) {
+            if (typeof a !== 'string' || a.length > 500) {
+                return next(new AppError('Each answer must be a string of at most 500 characters.', 400));
+            }
+        }
+    }
+
+    // Check job exists and is open
+    const jobRes = await pool.query(
+        'SELECT client_id, status, title, proposal_count FROM jobs WHERE job_id = $1',
+        [jobId]
+    );
+    if (jobRes.rows.length === 0) {
+        return next(new AppError('Job not found', 404));
+    }
+    const job = jobRes.rows[0];
+    if (job.status !== 'open') {
+        return next(new AppError('This job is no longer accepting proposals.', 400));
+    }
+    // Prevent provider from applying to their own job (edge case safety)
+    if (job.client_id === providerId) {
+        return next(new AppError('You cannot apply to your own job.', 403));
+    }
+
+    const dbClient = await pool.connect();
     try {
-        const newProposal = await pool.query(
-            `INSERT INTO proposals (job_id, provider_id, cover_letter, bid_amount) 
-                VALUES ($1, $2, $3, $4) RETURNING *`,
-            [jobId, providerId, cover_letter, bid_amount]
+        await dbClient.query('BEGIN');
+
+        const answersValue = (proposal_answers && proposal_answers.length > 0)
+            ? JSON.stringify(proposal_answers)
+            : null;
+
+        const newProposal = await dbClient.query(
+            `INSERT INTO proposals (job_id, provider_id, cover_letter, bid_amount, proposal_answers)
+                VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+            [jobId, providerId, cover_letter, bid_amount, answersValue]
+        );
+
+        // Increment proposal_count — first proposal locks the job
+        await dbClient.query(
+            'UPDATE jobs SET proposal_count = proposal_count + 1 WHERE job_id = $1',
+            [jobId]
+        );
+
+        await dbClient.query('COMMIT');
+
+        // Notify the client that a new proposal was received
+        const io = req.app.get('io');
+        createNotification(
+            io,
+            job.client_id,
+            'proposal_submitted',
+            `A new proposal was submitted for "${job.title}".`,
+            `/jobs/${jobId}/proposals`
         );
 
         res.status(201).json(newProposal.rows[0]);
 
     } catch (err) {
+        await dbClient.query('ROLLBACK');
         if (err.code === '23505') {
-            return next(new AppError('You have already submitted a proposal for this job', 400));
+            return next(new AppError('You have already submitted a proposal for this job.', 409));
         }
         throw err;
+    } finally {
+        dbClient.release();
     }
 });
 
@@ -241,19 +332,41 @@ exports.completeJob = catchAsync(async (req, res, next) => {
 });
 
 exports.updateJob = catchAsync(async (req, res, next) => {
-    const { title, description, budget } = req.body;
+    const { title, description, budget, deadline, job_questions } = req.body;
     const { id: jobId } = req.params;
     const clientId = req.user.id;
 
+    // Check ownership and open status first
+    const jobCheck = await pool.query(
+        'SELECT client_id, status, proposal_count FROM jobs WHERE job_id = $1',
+        [jobId]
+    );
+    if (jobCheck.rows.length === 0) {
+        return next(new AppError('Job not found', 404));
+    }
+    if (jobCheck.rows[0].client_id !== clientId) {
+        return next(new AppError('Forbidden: You are not the owner of this job.', 403));
+    }
+    if (jobCheck.rows[0].status !== 'open') {
+        return next(new AppError('Job cannot be edited once it is no longer open.', 403));
+    }
+    // Job lock: once first proposal submitted, fields are immutable
+    if (jobCheck.rows[0].proposal_count >= 1) {
+        return next(new AppError(
+            'This job can no longer be edited because proposals have already been submitted.',
+            409
+        ));
+    }
+
     const updatedJob = await pool.query(
-        `UPDATE jobs SET title = $1, description = $2, budget = $3 
-            WHERE job_id = $4 AND client_id = $5 AND status = 'open' 
+        `UPDATE jobs SET title = $1, description = $2, budget = $3, deadline = $4, job_questions = $5
+            WHERE job_id = $6 AND client_id = $7
             RETURNING *`,
-        [title, description, budget, jobId, clientId]
+        [title, description, budget, deadline || null, job_questions ? JSON.stringify(job_questions) : null, jobId, clientId]
     );
 
     if (updatedJob.rows.length === 0) {
-        return next(new AppError('Job cannot be edited or you are not the owner.', 403));
+        return next(new AppError('Job cannot be edited.', 403));
     }
     res.json(updatedJob.rows[0]);
 });
